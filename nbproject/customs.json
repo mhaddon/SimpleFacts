@@ -1,0 +1,11 @@
+{
+    "elements": {},
+    "attributes": {
+        "v-on:click": {
+            "context": "button"
+        },
+        "v-for": {
+            "context": "li"
+        }
+    }
+}

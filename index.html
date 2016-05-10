@@ -1,0 +1,115 @@
+<!-- index.html -->
+
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Simple Facts</title>
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="Include/Bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="Include/CSS/font-awesome.min.css">
+        <link rel="stylesheet" href="Include/CSS/stylesheet.css">
+    </head>
+    <body>
+        <header>
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href='/SimpleFacts/'><i class="fa fa-user" aria-hidden="true"></i> Simple Facts for Simple People</a>
+                </div>
+            </nav>
+
+            <h3>Lets learn something new!</h3>
+        </header>
+        <section>
+            <div class='row ChatWindows'>
+                <div class="col-sm-8 WindowContainer">
+                    <div>
+                        <div class='Window'>
+                            <div id='MessageHistoryList'>
+                                <ul class='speciallist'>
+                                    <li v-for='Message in Messages'>
+                                        <span>
+                                            <span class='largeText'>
+                                                {{ Message.name }}:
+                                            </span>
+                                            <span class='mediumText'>
+                                                {{ Message.value }}
+                                            </span>
+                                            <span class='smallText'>
+                                                {{ Message.time }}
+                                            </span>
+                                        </span>
+                                        <button v-on:click="removeChannel($index)">
+                                            <i class="fa fa-times" aria-hidden="true"></i>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <form id='MessageInputForm'>
+                                <input type='text' value='' placeholder='Tell me something new!'/>
+                                <button>
+                                    <i class="fa fa-comment-o" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- show the events -->
+                <div class="col-sm-4 WindowContainer">
+                    <div>
+                        <div class='Window' style='height:242px;'>
+                            <div id='ParticipantsList'>
+                                <ul class='speciallist'>
+                                    <li v-for='person in people'>
+                                        <span>{{ person.name }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class='Window' style='height:243px;'>
+                            <div id='ActiveChannelsList'>
+                                <ul class='speciallist'>
+                                    <li v-for='channel in joinedchannels'>
+                                        <span>{{ channel.name }}</span>
+                                        <button v-on:click="removeChannel($index)">
+                                            <i class="fa fa-times" aria-hidden="true"></i>
+                                        </button>
+                                    </li>
+                                    <li v-for='channel in otherchannels'>
+                                        <span>{{ channel.name }}</span>
+                                        <button v-on:click="subscribeChannel($index)">
+                                            <i class="fa fa-level-up" aria-hidden="true"></i>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <form id='ChannelInputForm'>
+                                <input type='text' value='' placeholder='Enter Channel Name'/>
+                                <button>
+                                    <i class="fa fa-comments-o" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer>
+            Hello, this app is a simple demonstration of Websockets and Vue.js<br/>
+            If the demonstration is not currently working, then it is most likely because the service on the server has been intentionally stopped.<br/>
+            You can review the code for this application online on github: <a href='https://github.com/mhaddon/SimpleFacts'>here</a>.<br/>
+            Please view my other projects and experiments at: <a href='https://michael.haddon.me'>michael.haddon.me</a>.<br/>
+            Thankyou,<br/>
+            - Michael.
+        </footer>
+
+        <!-- JS -->
+        <script src="Include/JS/vue-dev.js"></script>
+        <script src="Include/JS/vue-resource.min.js"></script>
+        <!--<script src="Include/Bootstrap/js/bootstrap.min.js"></script>-->
+        <script src="Include/JS/Socket.js"></script>
+        <script src="Include/JS/App.js"></script>
+    </body>
+</html>
