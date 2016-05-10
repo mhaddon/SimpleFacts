@@ -46,7 +46,7 @@
                                     </li>
                                 </ul>
                             </div>
-                            <form id='MessageInputForm'>
+                            <form id='MessageInputForm' class='InputForm'>
                                 <input type='text' value='' placeholder='Tell me something new!'/>
                                 <button>
                                     <i class="fa fa-comment-o" aria-hidden="true"></i>
@@ -85,13 +85,38 @@
                                     </li>
                                 </ul>
                             </div>
-                            <form id='ChannelInputForm'>
+                            <form id='ChannelInputForm' class='InputForm'>
                                 <input type='text' value='' placeholder='Enter Channel Name'/>
                                 <button>
                                     <i class="fa fa-comments-o" aria-hidden="true"></i>
                                 </button>
                             </form>
                         </div>
+                    </div>
+                </div>
+                <div class="overlayDiv" id='overlayDiv'>
+                    <div class="overlayMessageBox" id="connectingOverlay" style="display:block;">
+                        <h3>Connecting...</h3>
+                        <p style='display:block; margin:auto; width:32px; padding-right:5px;'>
+                            <i class="fa fa-refresh fa-2x fa-spin" aria-hidden="true"></i>
+                        </p>
+                    </div>
+                    <div class="overlayMessageBox" id="disconnectedOverlay">
+                        <h3>Disconnected</h3>
+                        <form id='ReconnectForm'>
+                            <button class='btn btn-lg' style='width:100%;'>Reconnect</button>
+                        </form>
+                    </div>
+                    <div class="overlayMessageBox" id="connectedOverlay">
+                        <h3>Connected</h3>
+                        <p>Please tell us your name</p>
+                        <p id='displayNameError' class='errormessage' style='position:absolute; top:3px; left:0px; width:100%; font-weight:bold; opacity:0.35;'>Name Too Short</p>
+                        <form id='NameInputForm' class='InputForm'>
+                            <input type='text' value='' placeholder='Enter Display Name'/>
+                            <button>
+                                <i class="fa fa-check-square-o fa-2x" aria-hidden="true"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -108,6 +133,7 @@
         <!-- JS -->
         <script src="Include/JS/Plugins/Vue/vue-dev.js"></script>
         <script src="Include/JS/Plugins/Vue/vue-resource.min.js"></script>
+        <script src="Include/JS/Scene.js"></script>
         <script src="Include/JS/Socket.js"></script>
         <script src="Include/JS/App.js"></script>
     </body>

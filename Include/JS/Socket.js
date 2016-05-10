@@ -20,18 +20,20 @@ SocketController.prototype.connect = function () {
     this.conn.onopen = this.onOpen.bind(this);
     this.conn.onmessage = this.onMessage.bind(this);
     this.conn.onclose = this.onClose.bind(this);
+    
+    Scene.onConnectionStart();
 }
 
 SocketController.prototype.onOpen = function (e) {
     this.Data.connected = true;
-
-    console.log('Connection to server established.');
+    
+    Scene.onConnected();
 }
 
 SocketController.prototype.onClose = function (e) {
     this.Data.connected = false;
-
-    console.log('Connection to server terminated.');
+    
+    Scene.onDisconnected();
 }
 
 SocketController.prototype.onMessage = function (e) {

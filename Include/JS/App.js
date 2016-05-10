@@ -1,23 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
-
+    Scene.loadElementCache();
+    Scene.attachListeners();
     Socket.connect();
-    
-    var msg = document.getElementById('MessageInputForm');
-    var msgbox = document.querySelector('#MessageInputForm input');
-
-    msg.addEventListener('submit', function (e) {
-        e.preventDefault();
-        if (msgbox.value.trim() === "" || !open) {
-            return;
-        }
-
-        Socket.conn.send(JSON.stringify({
-            msg: msgbox.value
-        }));
-
-        msgbox.value = "";
-
-    });
 });
 
 var messageListViewModel = new Vue({
