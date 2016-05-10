@@ -5,7 +5,7 @@
     },
     "autoload": {
         "classmap": [
-            "bin/Chat.php"
+            "Classes/Chat.php"
         ]
     }
 }
