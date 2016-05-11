@@ -91,8 +91,10 @@ header > h3 {
     left:0px;
     width:100%;
     padding:25px 10px;
+    padding-bottom:5px;
     height:calc(100% - 54px);
     color:black;
+    overflow-y:auto;
 }
 
 #MessageHistoryList:before {
@@ -187,6 +189,7 @@ footer > a:hover {
 ul.speciallist {
     list-style:none;
     padding:0;
+    margin:0;
 }
 
 ul.speciallist > li {

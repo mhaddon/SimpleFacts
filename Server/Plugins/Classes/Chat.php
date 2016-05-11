@@ -36,7 +36,7 @@ class Chat implements MessageComponentInterface {
 
         echo "\r\nRecived message: \"" . $msgj->msg . "\" from client " . $i . ".\r\n";
         $msgj->ID = $i;
-        $msgj->time = date("H:m:s");
+        $msgj->time = date("H:i:s");
 
         foreach ($this->clients as $client) {
 

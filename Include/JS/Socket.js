@@ -42,13 +42,11 @@ SocketController.prototype.onMessage = function (e) {
     console.log(data);
     
     
-    
-    
-    messageListViewModel.Messages.push({
+    messageListViewModel.addMessage({
         name: data.name,
         value: data.msg,
         time: data.time
-    })
+    });
 }
 
 var Socket = new SocketController;

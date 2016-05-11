@@ -16,6 +16,9 @@ var SceneController = function () {
             },
             Error: {
                 displayName: null
+            },
+            List: {
+                messageHistory: null
             }
         },
         User: {
@@ -55,6 +58,10 @@ SceneController.prototype.loadElementCache = function () {
     
     //Errors
     this.Data.Elements.Error.displayName = document.getElementById('displayNameError');
+    
+    //Lists
+    this.Data.Elements.Error.messageHistory = document.getElementById('MessageHistoryList');
+    this.Data.Elements.Field.messageHistoryUL = document.querySelector('#MessageHistoryList .speciallist');
 }
 
 SceneController.prototype.attachListeners = function () {
