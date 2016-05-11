@@ -66,7 +66,7 @@ SceneController.prototype.attachListeners = function () {
 SceneController.prototype.onNameSubmitted = function (e) {
     e.preventDefault();
 
-    if (this.Data.Elements.Field.Name.value.length > 3) {
+    if (this.Data.Elements.Field.Name.value.length > 2) {
         this.Data.User.Name = this.Data.Elements.Field.Name.value;
 
         this.Data.Elements.Overlay.parent.style.display = 'none';
@@ -83,7 +83,8 @@ SceneController.prototype.onMessageSubmitted = function (e) {
     }
 
     Socket.conn.send(JSON.stringify({
-        msg: this.Data.Elements.Field.Message.value
+        msg: this.Data.Elements.Field.Message.value,
+        name: this.Data.User.Name
     }));
 
     this.Data.Elements.Field.Message.value = "";
@@ -123,21 +124,6 @@ SceneController.prototype.onDisconnected = function (e) {
         this.Data.Elements.Overlay.disconnected.style.display = 'block';
         this.Data.Elements.Overlay.connected.style.display = '';
     }.bind(this), 500);
-}
-
-SceneController.prototype.onMessage = function (e) {
-    var data = JSON.parse(e.data);
-
-    console.log(data);
-
-
-
-
-    messageListViewModel.Messages.push({
-        name: participantsListViewModel.people[data.ID - 1].name,
-        value: data.msg,
-        time: data.time
-    })
 }
 
 var Scene = new SceneController;

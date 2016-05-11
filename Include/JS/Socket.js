@@ -45,7 +45,7 @@ SocketController.prototype.onMessage = function (e) {
     
     
     messageListViewModel.Messages.push({
-        name: participantsListViewModel.people[data.ID - 1].name,
+        name: data.name,
         value: data.msg,
         time: data.time
     })
