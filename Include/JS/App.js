@@ -4,11 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
     Socket.connect();
 });
 
-var messageListViewModel = new Vue({
-    // We want to target the div with an id of 'events'
-    el: '#MessageHistoryList',
-    // Here we can register any values or collections that hold data
-    // for the application
+var pageViewmodel = new Vue({
+    el: '#vueApp',
     data: {
         Messages: [
             {
@@ -22,6 +19,37 @@ var messageListViewModel = new Vue({
                 time: "12:32:32"
             }
         ]
+    }
+});
+
+var messageListComponent = Vue.component('messageList', {
+    template: '#messageList-template',
+    props: {
+        data: Array
+    },
+    data: function () {
+        var Messages = [];
+        Messages.sort(compareTime);
+
+        return {
+            Messages: Messages
+        }
+    },
+    methods: {
+        sortBy: function (key) {
+            this.sortKey = key
+            this.sortOrders[key] = this.sortOrders[key] * -1
+        }
+    }
+});
+
+
+var messageListViewModel = new Vue({
+    // We want to target the div with an id of 'events'
+    el: '#MessageHistoryList',
+    // Here we can register any values or collections that hold data
+    // for the application
+    data: {
     },
     // Anything within the ready function will run when the application loads
     ready: function () {},
@@ -29,24 +57,24 @@ var messageListViewModel = new Vue({
     methods: {
         addMessage: function (data) {
             this.Messages.push(data);
-            
+
             /**
              * Vue does not instantly add the messages to the page. It instead
              * seems to add the item after a short delay. This means that if we
              * want to update the DOM after the message has been added, we also
              * need to wait.
-             * 
+             *
              * There might be a better way to do this.
-             * 
+             *
              * The following block of code is responsible for causing the message
              * history scrollbar to update and scrolldown after the message is
              * posted, this is so the user can instantly see the new message, if
              * it otherwise would have been hidden by overflow-y.
-             * 
+             *
              * This block of code also makes it so the page does not scroll down
              * if the user does not seem to be currently interested in viewing
              * the lastest messages. (IE they have scrolled up purposefully).
-             * 
+             *
              * @returns {undefined}
              */
             setTimeout(function () {
@@ -54,7 +82,7 @@ var messageListViewModel = new Vue({
                 var childHeight = Scene.Data.Elements.Field.messageHistoryUL.getBoundingClientRect().height;
                 var parentHeight = Scene.Data.Elements.Error.messageHistory.getBoundingClientRect().height;
                 var maxYScroll = childHeight - parentHeight;
-                
+
                 if ((childHeight > parentHeight) && (maxYScroll - scrollTop < 100)) {
                     Scene.Data.Elements.Error.messageHistory.scrollTop = maxYScroll + 60;
                 }
@@ -119,3 +147,17 @@ var participantsListViewModel = new Vue({
     // Methods we want to use in our application are registered here
     methods: {}
 });
+
+/**
+ * This function compares the date between two elements
+ * @param {Message Class} a
+ * @param {Message Class} b
+ * @returns {Number}
+ */
+function compareTime(a, b) {
+    if (a.ms > b.ms)
+        return -1;
+    if (a.ms < b.ms)
+        return 1;
+    return 0;
+}

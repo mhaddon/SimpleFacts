@@ -21,30 +21,34 @@
 
             <h3>Lets learn something new!</h3>
         </header>
-        <section>
+        <!-- component template -->
+        <script type="text/x-template" id="messageList-template">
+            <ul class='speciallist'>
+                <li v-for='Message in Messages'>
+                    <span>
+                        <span class='largeText'>
+                            {{ Message.name }}:
+                        </span>
+                        <span class='mediumText'>
+                            {{ Message.value }}
+                        </span>
+                        <span class='smallText'>
+                            {{ Message.time }}
+                        </span>
+                    </span>
+                    <button v-on:click="removeChannel($index)">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                </li>
+            </ul>
+        </script>
+        <section id="vueApp">
             <div class='row ChatWindows'>
                 <div class="col-sm-8 WindowContainer">
                     <div>
                         <div class='Window'>
                             <div id='MessageHistoryList'>
-                                <ul class='speciallist'>
-                                    <li v-for='Message in Messages'>
-                                        <span>
-                                            <span class='largeText'>
-                                                {{ Message.name }}:
-                                            </span>
-                                            <span class='mediumText'>
-                                                {{ Message.value }}
-                                            </span>
-                                            <span class='smallText'>
-                                                {{ Message.time }}
-                                            </span>
-                                        </span>
-                                        <button v-on:click="removeChannel($index)">
-                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                        </button>
-                                    </li>
-                                </ul>
+                                <messageList :data="Messages"></messageList>
                             </div>
                             <form id='MessageInputForm' class='InputForm'>
                                 <input type='text' value='' placeholder='Tell me something new!'/>
