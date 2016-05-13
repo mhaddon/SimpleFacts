@@ -88,11 +88,11 @@ SceneController.prototype.onMessageSubmitted = function (e) {
     if ((this.Data.Elements.Field.Message.value.trim() === "") || (!Socket.Data.connected)) {
         return;
     }
-
-    Socket.conn.send(JSON.stringify({
+    
+    Socket.Broadcast('CatFacts', {
         msg: this.Data.Elements.Field.Message.value,
         name: this.Data.User.Name
-    }));
+    });
 
     this.Data.Elements.Field.Message.value = "";
 }

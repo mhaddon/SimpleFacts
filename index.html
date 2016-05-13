@@ -24,7 +24,7 @@
         <!-- component template -->
         <script type="text/x-template" id="messageList-template">
             <ul class='speciallist'>
-                <li v-for='Message in Messages'>
+                <li v-for="Message in Messages | orderBy 'ms'">
                     <span>
                         <span class='largeText'>
                             {{ Message.name }}:
@@ -32,7 +32,7 @@
                         <span class='mediumText'>
                             {{ Message.value }}
                         </span>
-                        <span class='smallText'>
+                        <span class='smallText' title='{{ Message.ms }}'>
                             {{ Message.time }}
                         </span>
                     </span>
@@ -42,13 +42,33 @@
                 </li>
             </ul>
         </script>
+        <script type="text/x-template" id="channelList-template">
+            <ul class='speciallist'>
+                <li v-for="Channel in Channels | orderBy 'joined'">
+                    <span>{{ Channel.name }}</span>
+                    <button v-if="Channel.joined" v-on:click="removeChannel(Channel)">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                    <button v-else v-on:click="subscribeChannel(Channel)">
+                        <i class="fa fa-level-up" aria-hidden="true"></i>
+                    </button>
+                </li>
+            </ul>
+        </script>
+        <script type="text/x-template" id="userList-template">
+            <ul class='speciallist'>
+                <li v-for='User in Users'>
+                    <span>{{ User.name }}</span>
+                </li>
+            </ul>
+        </script>
         <section id="vueApp">
             <div class='row ChatWindows'>
                 <div class="col-sm-8 WindowContainer">
                     <div>
                         <div class='Window'>
                             <div id='MessageHistoryList'>
-                                <messageList :data="Messages"></messageList>
+                                <messagelist-component :Messages="Messages"></messagelist-component>
                             </div>
                             <form id='MessageInputForm' class='InputForm'>
                                 <input type='text' value='' placeholder='Tell me something new!'/>
@@ -65,29 +85,12 @@
                     <div>
                         <div class='Window' style='height:242px;'>
                             <div id='ParticipantsList'>
-                                <ul class='speciallist'>
-                                    <li v-for='person in people'>
-                                        <span>{{ person.name }}</span>
-                                    </li>
-                                </ul>
+                                <userlist-component :Users="Users"></userlist-component>
                             </div>
                         </div>
                         <div class='Window' style='height:243px;'>
                             <div id='ActiveChannelsList'>
-                                <ul class='speciallist'>
-                                    <li v-for='channel in joinedchannels'>
-                                        <span>{{ channel.name }}</span>
-                                        <button v-on:click="removeChannel($index)">
-                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                        </button>
-                                    </li>
-                                    <li v-for='channel in otherchannels'>
-                                        <span>{{ channel.name }}</span>
-                                        <button v-on:click="subscribeChannel($index)">
-                                            <i class="fa fa-level-up" aria-hidden="true"></i>
-                                        </button>
-                                    </li>
-                                </ul>
+                                <channellist-component :Channels="Channels"></channellist-component>
                             </div>
                             <form id='ChannelInputForm' class='InputForm'>
                                 <input type='text' value='' placeholder='Enter Channel Name'/>
@@ -135,8 +138,10 @@
         </footer>
 
         <!-- JS -->
+        <script src="Include/JS/Plugins/Autobahn/autobahn.min.js"></script>
         <script src="Include/JS/Plugins/Vue/vue-dev.js"></script>
         <script src="Include/JS/Plugins/Vue/vue-resource.min.js"></script>
+        <script src="Include/JS/ViewModel.js"></script>
         <script src="Include/JS/Scene.js"></script>
         <script src="Include/JS/Socket.js"></script>
         <script src="Include/JS/App.js"></script>

@@ -4,160 +4,40 @@ document.addEventListener('DOMContentLoaded', function () {
     Socket.connect();
 });
 
-var pageViewmodel = new Vue({
-    el: '#vueApp',
-    data: {
-        Messages: [
-            {
-                name: "Michael",
-                value: "Did you know, that cows have snouts?",
-                time: "12:31:24"
-            },
-            {
-                name: "Bob",
-                value: "What about trees having hairs?!",
-                time: "12:32:32"
-            }
-        ]
-    }
-});
-
-var messageListComponent = Vue.component('messageList', {
-    template: '#messageList-template',
-    props: {
-        data: Array
-    },
-    data: function () {
-        var Messages = [];
-        Messages.sort(compareTime);
-
-        return {
-            Messages: Messages
-        }
-    },
-    methods: {
-        sortBy: function (key) {
-            this.sortKey = key
-            this.sortOrders[key] = this.sortOrders[key] * -1
-        }
-    }
-});
+//http://autobahn.ws/js/reference_wampv1.html
 
 
-var messageListViewModel = new Vue({
-    // We want to target the div with an id of 'events'
-    el: '#MessageHistoryList',
-    // Here we can register any values or collections that hold data
-    // for the application
-    data: {
-    },
-    // Anything within the ready function will run when the application loads
-    ready: function () {},
-    // Methods we want to use in our application are registered here
-    methods: {
-        addMessage: function (data) {
-            this.Messages.push(data);
+/*
+ var conn = new ab.Session('ws://localhost:8080',
+ function () {
+ conn.subscribe('kittensCategory', function (topic, data) {
+ // This is where you would add the new article to the DOM (beyond the scope of this tutorial)
+ console.log('New article published to category "' + topic + '" : ' + data.title);
+ });
+ },
+ function () {
+ console.warn('WebSocket connection closed');
+ },
+ {'skipSubprotocolCheck': true}
+ );
+ *//*
+var conn = null;
+document.addEventListener('DOMContentLoaded', function () {
+    conn = new ab.Session('wss://wss.haddon.me',
+        function() {
+            conn.subscribe('kittensCategory', function(topic, data) {
+                // This is where you would add the new article to the DOM (beyond the scope of this tutorial)
+                console.log('New article published to category "' + topic + '" : ' + data.title);
+                console.log(data);
+            });
 
-            /**
-             * Vue does not instantly add the messages to the page. It instead
-             * seems to add the item after a short delay. This means that if we
-             * want to update the DOM after the message has been added, we also
-             * need to wait.
-             *
-             * There might be a better way to do this.
-             *
-             * The following block of code is responsible for causing the message
-             * history scrollbar to update and scrolldown after the message is
-             * posted, this is so the user can instantly see the new message, if
-             * it otherwise would have been hidden by overflow-y.
-             *
-             * This block of code also makes it so the page does not scroll down
-             * if the user does not seem to be currently interested in viewing
-             * the lastest messages. (IE they have scrolled up purposefully).
-             *
-             * @returns {undefined}
-             */
-            setTimeout(function () {
-                var scrollTop = Scene.Data.Elements.Error.messageHistory.scrollTop;
-                var childHeight = Scene.Data.Elements.Field.messageHistoryUL.getBoundingClientRect().height;
-                var parentHeight = Scene.Data.Elements.Error.messageHistory.getBoundingClientRect().height;
-                var maxYScroll = childHeight - parentHeight;
-
-                if ((childHeight > parentHeight) && (maxYScroll - scrollTop < 100)) {
-                    Scene.Data.Elements.Error.messageHistory.scrollTop = maxYScroll + 60;
-                }
-            }, 100);
-        }
-    }
-});
-
-var channelListViewModel = new Vue({
-    // We want to target the div with an id of 'events'
-    el: '#ActiveChannelsList',
-    // Here we can register any values or collections that hold data
-    // for the application
-    data: {
-        joinedchannels: [
-            {
-                name: "cat"
-            }
-        ],
-        otherchannels: [
-            {
-                name: "dog"
-            }
-        ]
-    },
-    // Anything within the ready function will run when the application loads
-    ready: function () {},
-    // Methods we want to use in our application are registered here
-    methods: {
-        subscribeChannel: function (i) {
-            var e = this.otherchannels[i];
-
-            this.joinedchannels.push(e);
-            this.otherchannels.splice(i, 1);
+         // publish event on a topic
+         conn.publish("kittensCategory", {a: 23, b: "foobar"});
         },
-        removeChannel: function (i) {
-            var e = this.joinedchannels[i];
-
-            this.otherchannels.push(e);
-            this.joinedchannels.splice(i, 1);
-        }
-    }
+        function(code, reason) {
+            console.warn('WebSocket connection closed: ' + reason);
+        },
+        {'skipSubprotocolCheck': true}
+    );
 });
-
-var participantsListViewModel = new Vue({
-    // We want to target the div with an id of 'events'
-    el: '#ParticipantsList',
-    // Here we can register any values or collections that hold data
-    // for the application
-    data: {
-        people: [
-            {
-                name: "Michael"
-            },
-            {
-                name: "Bob"
-            },
-        ]
-    },
-    // Anything within the ready function will run when the application loads
-    ready: function () {},
-    // Methods we want to use in our application are registered here
-    methods: {}
-});
-
-/**
- * This function compares the date between two elements
- * @param {Message Class} a
- * @param {Message Class} b
- * @returns {Number}
- */
-function compareTime(a, b) {
-    if (a.ms > b.ms)
-        return -1;
-    if (a.ms < b.ms)
-        return 1;
-    return 0;
-}
+#*/
