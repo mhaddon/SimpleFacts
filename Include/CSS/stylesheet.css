@@ -243,3 +243,77 @@ form .fa {
     text-align:center;
     font-size:0.85em;
 }
+
+.divTextBox {
+    background-color:#f8f8f8;
+    resize:none;
+
+    width:calc(100% - 54px);
+    height:100%;
+    padding:15px 25px;
+
+    cursor:text;
+    position:relative;
+    vertical-align:top;
+    border:1px solid #CFCFCF;
+    display:-moz-inline-stack;
+    display:inline-block;
+    color:#626262;
+    outline:none;
+
+    text-align:left;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    -webkit-transition:all 0.5s ease-in-out;
+    -ms-transition:all 0.5s ease-in-out;
+    -o-transition:all 0.5s ease-in-out;
+    transition:all 0.5s ease-in-out;
+
+    -webkit-border-radius:0;
+    -o-border-radius:0;
+    -moz-border-radius:0;
+    -ms-border-radius:0;
+    border-radius:0;
+
+    margin:0;
+    font-size:18px;
+    font-family:"Roboto",Arial,Helvetica,sans-serif;
+    font-weight:400;
+
+    box-sizing:border-box;
+
+    -webkit-box-shadow:inset 0 0px 0px rgba(0, 0, 0, 0.075);
+    box-shadow:inset 0 0px 0px rgba(0, 0, 0, 0.075);
+}
+
+.divTextBox > a {
+    color: #337ab7 !important;    
+}
+
+.divTextBox:after {
+    position:absolute;
+    top:0px;
+    left:0px;
+    content:"Type your thoughts here!";
+    font-size:18px;
+    font-family:"Roboto",Arial,Helvetica,sans-serif;
+    font-weight:400;
+    padding:15px 25px;
+    color:#626262;
+    opacity:0.85;
+
+    pointer-events:none;
+
+    transition: opacity 0.5s ease;    
+}
+
+.divTextBox.hasContent:after, .divTextBox:focus:after {
+    opacity:0;
+}
+
+.divTextBox.hasContent:before, .divTextBox:focus:before {
+    opacity:0;
+}

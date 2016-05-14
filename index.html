@@ -44,7 +44,7 @@
         </script>
         <script type="text/x-template" id="channelList-template">
             <ul class='speciallist'>
-                <li v-for="Channel in Channels | orderBy 'joined'">
+                <li v-for="Channel in Channels | orderBy 'joined' -1">
                     <span>{{ Channel.name }}</span>
                     <button v-if="Channel.joined" v-on:click="removeChannel(Channel)">
                         <i class="fa fa-times" aria-hidden="true"></i>
@@ -71,7 +71,8 @@
                                 <messagelist-component :Messages="Messages"></messagelist-component>
                             </div>
                             <form id='MessageInputForm' class='InputForm'>
-                                <input type='text' value='' placeholder='Tell me something new!'/>
+                                <div class='divTextBox highlightTags' id='newcomment' placeholder='Tell me something new!' contenteditable='true'></div>
+                                <input type='text' value='' placeholder='Tell me something new!' style='display:none;'/>
                                 <button>
                                     <i class="fa fa-comment-o" aria-hidden="true"></i>
                                 </button>
@@ -141,6 +142,7 @@
         <script src="Include/JS/Plugins/Autobahn/autobahn.min.js"></script>
         <script src="Include/JS/Plugins/Vue/vue-dev.js"></script>
         <script src="Include/JS/Plugins/Vue/vue-resource.min.js"></script>
+        <script src="Include/JS/ContentEditable.js"></script>
         <script src="Include/JS/ViewModel.js"></script>
         <script src="Include/JS/Scene.js"></script>
         <script src="Include/JS/Socket.js"></script>

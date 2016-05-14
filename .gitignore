@@ -47,4 +47,5 @@ Temporary Items
 .apdisk
 /nbproject/private/
 /nbproject/
-/Include/vendor/
+Server/Plugins/vendor/
+Server/Plugins/Classes/connect.php

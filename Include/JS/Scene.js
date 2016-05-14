@@ -12,7 +12,8 @@ var SceneController = function () {
             },
             Field: {
                 Message: null,
-                Name: null
+                Name: null,
+                ContentEditable: null
             },
             Error: {
                 displayName: null
@@ -55,13 +56,14 @@ SceneController.prototype.loadElementCache = function () {
     //Fields
     this.Data.Elements.Field.Message = document.querySelector('#MessageInputForm input');
     this.Data.Elements.Field.Name = document.querySelector('#NameInputForm input');
-    
+    this.Data.Elements.Field.ContentEditable = document.querySelector('.divTextBox');
+
     //Errors
     this.Data.Elements.Error.displayName = document.getElementById('displayNameError');
-    
+
     //Lists
-    this.Data.Elements.Error.messageHistory = document.getElementById('MessageHistoryList');
-    this.Data.Elements.Field.messageHistoryUL = document.querySelector('#MessageHistoryList .speciallist');
+    this.Data.Elements.List.messageHistory = document.getElementById('MessageHistoryList');
+    this.Data.Elements.List.messageHistoryUL = document.querySelector('#MessageHistoryList .speciallist');
 }
 
 SceneController.prototype.attachListeners = function () {
@@ -78,6 +80,8 @@ SceneController.prototype.onNameSubmitted = function (e) {
 
         this.Data.Elements.Overlay.parent.style.display = 'none';
         this.Data.Elements.Error.displayName.style.display = '';
+        
+        Socket.updateName();
     } else {
         this.Data.Elements.Error.displayName.style.display = 'block';
     }
@@ -85,16 +89,26 @@ SceneController.prototype.onNameSubmitted = function (e) {
 
 SceneController.prototype.onMessageSubmitted = function (e) {
     e.preventDefault();
-    if ((this.Data.Elements.Field.Message.value.trim() === "") || (!Socket.Data.connected)) {
-        return;
-    }
-    
-    Socket.Broadcast('CatFacts', {
-        msg: this.Data.Elements.Field.Message.value,
-        name: this.Data.User.Name
-    });
 
-    this.Data.Elements.Field.Message.value = "";
+    var Message = Scene.Data.Elements.Field.ContentEditable.innerText.trim();
+
+    if ((Message.length > 0) && (Socket.Data.connected)) {
+
+        var Tags = Message.match(/#+([a-zA-Z_]{1,20})/g);
+
+        if (Tags !== null) {
+            for (var i = 0; i < Tags.length; i++) {
+                var e = Tags[i];
+                Socket.Subscribe(e);
+                Socket.Broadcast(e, {
+                    msg: Message,
+                    name: this.Data.User.Name
+                });
+            }
+
+            Scene.Data.Elements.Field.ContentEditable.innerText = "";
+        }
+    }
 }
 
 SceneController.prototype.onReconnectSubmitted = function (e) {

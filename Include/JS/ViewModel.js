@@ -29,10 +29,10 @@ var ViewModel = new (function () {
         },
         methods: {
             subscribeChannel: function (Channel) {
-                Channel.joined = true;
+                Socket.Subscribe(Channel.name);
             },
             removeChannel: function (Channel) {
-                Channel.joined = false;
+                Socket.unSubscribe(Channel.name);
             }
         }
     });
@@ -54,24 +54,8 @@ var ViewModel = new (function () {
                     ms: 2
                 }
             ],
-            Users: [
-                {
-                    name: "Michael"
-                },
-                {
-                    name: "Bob"
-                }
-            ],
-            Channels: [
-                {
-                    name: "Cats",
-                    joined: true
-                },
-                {
-                    name: "Dogs",
-                    joined: false
-                }
-            ]
+            Users: [],
+            Channels: []
         },
         components: {
             "messagelist-component": messageListComponent,
@@ -79,7 +63,48 @@ var ViewModel = new (function () {
             "userlist-component": userListComponent
         },
         methods: {
+            UserListIndex: function (ID) {
+                for (var i = 0; i < this.Users.length; i++) {
+                    var e = this.Users[i];
+                    if (e.ID === ID) {
+                        return i;
+                    }
+                }
+                return false;
+            },
+            addUser: function (data) {
+                this.addMessage({
+                    name: 'SYSTEM',
+                    value: data.name + ' has joined the server',
+                    time: '',
+                    ms: this.getMostRecentMessageTime() + 1
+                });
+
+                if (this.UserListIndex(data.ID) !== false) {
+                    this.Users[this.UserListIndex(data.ID)].name = data.name;
+                } else {
+                    this.Users.push({
+                        name: data.name,
+                        ID: data.ID
+                    });
+                }
+            },
+            removeUser: function (data) {
+                var UserIndex = this.UserListIndex(data.ID);
+                
+                if (UserIndex !== false) {                    
+                    this.addMessage({
+                        name: 'SYSTEM',
+                        value: this.Users[UserIndex].name + ' has disconnected',
+                        time: '',
+                        ms: this.getMostRecentMessageTime() + 1
+                    });
+                    
+                    this.Users.$remove(this.Users[UserIndex]);
+                }
+            },
             addMessage: function (data) {
+                data.value = data.value.replace(/\#+([a-zA-Z_]{1,20})/g, '<a href="#">#$1</a>');
                 this.Messages.push(data);
 
                 /**
@@ -102,18 +127,80 @@ var ViewModel = new (function () {
                  * @returns {undefined}
                  */
                 Vue.nextTick(function () {
-                    var scrollTop = Scene.Data.Elements.Error.messageHistory.scrollTop;
-                    var childHeight = Scene.Data.Elements.Field.messageHistoryUL.getBoundingClientRect().height;
-                    var parentHeight = Scene.Data.Elements.Error.messageHistory.getBoundingClientRect().height;
+                    var scrollTop = Scene.Data.Elements.List.messageHistory.scrollTop;
+                    var childHeight = Scene.Data.Elements.List.messageHistoryUL.getBoundingClientRect().height;
+                    var parentHeight = Scene.Data.Elements.List.messageHistory.getBoundingClientRect().height;
                     var maxYScroll = childHeight - parentHeight;
 
                     if ((childHeight > parentHeight) && (maxYScroll - scrollTop < 100)) {
-                        Scene.Data.Elements.Error.messageHistory.scrollTop = maxYScroll + 60;
+                        Scene.Data.Elements.List.messageHistory.scrollTop = maxYScroll + 60;
                     }
                 });
+            },
+            getMostRecentMessageTime: function () {
+                var lastTime = 0;
+                for (var i = 0; i < this.Messages.length; i++) {
+                    var e = this.Messages[i];
+                    if (e.ms > lastTime) {
+                        lastTime = e.ms;
+                    }
+                }
+                return lastTime;
+            },
+            isSubscribed: function (topic) {
+                for (var i = 0; i < this.Channels.length; i++) {
+                    var e = this.Channels[i];
+                    if ((e.joined === true) && (e.name === topic)) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            ChannelListIndex: function (topic) {
+                for (var i = 0; i < this.Channels.length; i++) {
+                    var e = this.Channels[i];
+                    if (e.name === topic) {
+                        return i;
+                    }
+                }
+                return false;
+            },
+            Subscribe: function (topic) {
+                this.addMessage({
+                    name: 'SYSTEM',
+                    value: 'You have subscribed to ' + topic,
+                    time: '',
+                    ms: this.getMostRecentMessageTime() + 1
+                });
+
+                if (this.ChannelListIndex(topic) !== false) {
+                    this.Channels[this.ChannelListIndex(topic)].joined = true;
+                } else {
+                    this.Channels.push({
+                        name: topic,
+                        joined: true
+                    });
+                }
+            },
+            unSubscribe: function (topic) {
+                this.addMessage({
+                    name: 'SYSTEM',
+                    value: 'You have unsubscribed from ' + topic,
+                    time: '',
+                    ms: this.Messages[this.Messages.length - 1].ms + 1
+                });
+
+                if (this.ChannelListIndex(topic) !== false) {
+                    this.Channels[this.ChannelListIndex(topic)].joined = false;
+                } else {
+                    this.Channels.push({
+                        name: topic,
+                        joined: false
+                    });
+                }
             }
         }
     });
-    
+
     return pageViewmodel;
 });
