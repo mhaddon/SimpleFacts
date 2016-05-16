@@ -1,43 +1,30 @@
+/**
+ * When the document has been loaded we will initiate the application and run
+ * all the necessary javascript stuffness.
+ * 
+ * This small block of code is what makes everything work. Without it, nothing
+ * happens.
+ */
 document.addEventListener('DOMContentLoaded', function () {
     Scene.loadElementCache();
     Scene.attachListeners();
+    ContentEditable.attachListeners();
     Socket.connect();
 });
 
-//http://autobahn.ws/js/reference_wampv1.html
-
-
-/*
- var conn = new ab.Session('ws://localhost:8080',
- function () {
- conn.subscribe('kittensCategory', function (topic, data) {
- // This is where you would add the new article to the DOM (beyond the scope of this tutorial)
- console.log('New article published to category "' + topic + '" : ' + data.title);
- });
- },
- function () {
- console.warn('WebSocket connection closed');
- },
- {'skipSubprotocolCheck': true}
- );
- *//*
-var conn = null;
-document.addEventListener('DOMContentLoaded', function () {
-    conn = new ab.Session('wss://wss.haddon.me',
-        function() {
-            conn.subscribe('kittensCategory', function(topic, data) {
-                // This is where you would add the new article to the DOM (beyond the scope of this tutorial)
-                console.log('New article published to category "' + topic + '" : ' + data.title);
-                console.log(data);
-            });
-
-         // publish event on a topic
-         conn.publish("kittensCategory", {a: 23, b: "foobar"});
-        },
-        function(code, reason) {
-            console.warn('WebSocket connection closed: ' + reason);
-        },
-        {'skipSubprotocolCheck': true}
-    );
-});
-#*/
+/**
+ * This function makes an array have unique elements by comparing them to a hash
+ * table.
+ * It will return an array with unique elements.
+ * 
+ * Credit to this Stackoverflow post: http://stackoverflow.com/a/9229821/1507692
+ * 
+ * @param {Array} a
+ * @returns {Array}
+ */
+function uniq(a) {
+    var seen = {};
+    return a.filter(function (item) {
+        return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+    });
+}
