@@ -73,6 +73,8 @@ ContentEditableController.prototype.attachListeners = function () {
 /**
  * This method is ran when the content of the element has changed, or we if need
  * to check if it has been changed.
+ * I did not write this code. 
+ * Please see credit at top of page.
  * 
  * @param {Object} e - Event information
  * @returns {undefined}
@@ -106,7 +108,11 @@ ContentEditableController.prototype.onContentChanged = function (e) {
             this.set_range(end, end, this.el);
             return;
         }
-
+        
+        /**
+         * This is the part of the code that you will want to replace a string
+         * with a tag or something else.
+         */
         var filter = Text.replace(/\#+([a-zA-Z_]{1,20})/g, '<a href="#">#$1</a>');
 
         if (!/\&nbsp;$/.test(html)) {
@@ -120,6 +126,8 @@ ContentEditableController.prototype.onContentChanged = function (e) {
 /**
  * This method is ran if the range of the users mouse cursor has changed.
  * In short, if they might have selected a different part of the string.
+ * I did not write this code. 
+ * Please see credit at top of page.
  * 
  * @param {Object} e - Event information
  * @returns {undefined}
@@ -164,6 +172,9 @@ ContentEditableController.prototype.onKeyPressed = function (e) {
 }
 
 /**
+ * This method seems to recieve the currently selected area of a textbox.
+ * I did not write this code. 
+ * Please see credit at top of page.
  * 
  * @param {type} node
  * @returns {Array|ContentEditableController.prototype.get_text_nodes_in.text_nodes}
@@ -183,6 +194,11 @@ ContentEditableController.prototype.get_text_nodes_in = function (node) {
 }
 
 /**
+ * Presumably this method sets the the range of the element.
+ * The range is the text on the element that is currently selected.
+ * It also seems to remove any existing ranges from other elements aswell.
+ * I did not write this code. 
+ * Please see credit at top of page.
  * 
  * @param {type} start
  * @param {type} end

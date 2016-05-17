@@ -5,7 +5,6 @@
     },
     "autoload": {
         "classmap": [
-            "Classes/Chat.php",
             "Classes/Pusher.php"
         ]
     }

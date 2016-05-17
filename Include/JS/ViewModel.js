@@ -1,7 +1,35 @@
+/**
+ * When adapting Vue it seems that you dont really need to be able to reference
+ * the components in javascript after you have created the vue object.
+ * 
+ * So instead of having loads of random components accessable globally, i have
+ * contained them all in one function/class.
+ * 
+ * I could have nestled these components into the parent, but i think that
+ * would have made the code unreadable.
+ * 
+ * This class returns the vue model controller.
+ * 
+ * @returns {Vue}
+ */
 var ViewModel = new (function () {
+    /**
+     * Create the component that controlls the list of messages.
+     */
     var messageListComponent = Vue.extend({
+        /**
+         * The components design template, see the "text/x-template" tags in
+         * index.html
+         */
         template: '#messageList-template',
+        /**
+         * The components variables that it inherits from its parent
+         */
         props: ['Messages'],
+        /**
+         * Every component requires a data feild, but i do not need it as
+         * i inherit all the relevent data. So it is filled with nonsense.
+         */
         data: function () {
             return {
                 a: 1
@@ -9,9 +37,23 @@ var ViewModel = new (function () {
         }
     });
 
+    /**
+     * Create the component that controlls the list of logged in users
+     */
     var userListComponent = Vue.extend({
+        /**
+         * The components design template, see the "text/x-template" tags in
+         * index.html
+         */
         template: '#userList-template',
+        /**
+         * The components variables that it inherits from its parent
+         */
         props: ['Users'],
+        /**
+         * Every component requires a data feild, but i do not need it as
+         * i inherit all the relevent data. So it is filled with nonsense.
+         */
         data: function () {
             return {
                 a: 1
@@ -19,50 +61,103 @@ var ViewModel = new (function () {
         }
     });
 
+    /**
+     * Create the component that controlls the list of active channels
+     */
     var channelListComponent = Vue.extend({
+        /**
+         * The components design template, see the "text/x-template" tags in
+         * index.html
+         */
         template: '#channelList-template',
+        /**
+         * The components variables that it inherits from its parent
+         */
         props: ['Channels'],
+        /**
+         * Every component requires a data feild, but i do not need it as
+         * i inherit all the relevent data. So it is filled with nonsense.
+         */
         data: function () {
             return {
                 a: 1
             }
         },
+        /**
+         * The components specific methods.
+         * Because of how it is set up, these are methods that we cannot execute
+         * externally with Javascript.
+         * The purpose of these methods is to execute them directly from the
+         * template.
+         * Look at index.html to see them referenced.
+         */
         methods: {
+            /**
+             * Subscribe the client to this channel
+             * 
+             * @param {channelListComponent} Channel
+             * @returns {undefined}
+             */
             subscribeChannel: function (Channel) {
                 Socket.Subscribe(Channel.name);
             },
+            /**
+             * unSubscribe the client from this channel
+             * 
+             * @param {channelListComponent} Channel
+             * @returns {undefined}
+             */
             removeChannel: function (Channel) {
                 Socket.unSubscribe(Channel.name);
             }
         }
     });
 
+    /**
+     * Create the parent vue controller which incorporates all of the above
+     * components.
+     * This class is what the ViewModel class returns. 
+     */
     var pageViewmodel = new Vue({
         el: '#vueApp',
         data: {
-            Messages: [
-                {
-                    name: "Michael",
-                    value: "Did you know, that cows have snouts?",
-                    time: "12:31:24",
-                    ms: 1
-                },
-                {
-                    name: "Bob",
-                    value: "What about trees having hairs?!",
-                    time: "12:32:32",
-                    ms: 2
-                }
-            ],
+            /**
+             * All of the rendered messages. 
+             * See messageListComponent to see its use.
+             */
+            Messages: [],
+            /**
+             * All of the logged in users.
+             * See userListComponent to see its use.
+             */
             Users: [],
+            /**
+             * All of the active channels.
+             * See channelListComponent to see its use.
+             */
             Channels: []
         },
+        /**
+         * All the components that this vue class uses.
+         * Vue component names have a - requirement, for some reason
+         */
         components: {
             "messagelist-component": messageListComponent,
             "channellist-component": channelListComponent,
             "userlist-component": userListComponent
         },
+        /**
+         * The various methods we can call to modify the displays information.
+         * All these methods can be accessed and called from outside of this class
+         * by doing:
+         * ViewModel.UserListIndex(), or whatever.
+         */
         methods: {
+            /**
+             * Finds the index of a specific session id in the userlist.
+             * @param {String} ID
+             * @returns {Number|Boolean}
+             */
             UserListIndex: function (ID) {
                 for (var i = 0; i < this.Users.length; i++) {
                     var e = this.Users[i];
@@ -72,6 +167,13 @@ var ViewModel = new (function () {
                 }
                 return false;
             },
+            /**
+             * Adds a new user to the UsersList.
+             * It will also check to see if a user already exists with that session id.
+             * Because if it does, it will simply just update that user.
+             * @param {Object} data
+             * @returns {undefined}
+             */
             addUser: function (data) {
                 this.addMessage({
                     name: 'SYSTEM',
@@ -89,20 +191,33 @@ var ViewModel = new (function () {
                     });
                 }
             },
+            /**
+             * This method removes a user from the list with a specific session id.
+             * @param {Object} data
+             * @returns {undefined}
+             */
             removeUser: function (data) {
                 var UserIndex = this.UserListIndex(data.ID);
-                
-                if (UserIndex !== false) {                    
+
+                if (UserIndex !== false) {
                     this.addMessage({
                         name: 'SYSTEM',
                         value: this.Users[UserIndex].name + ' has disconnected',
                         time: '',
                         ms: this.getMostRecentMessageTime() + 1
                     });
-                    
+
                     this.Users.$remove(this.Users[UserIndex]);
                 }
             },
+            /**
+             * This method adds a new message to the message log.
+             * It also is responsible for causing the page to jump down with the
+             * new message.
+             * 
+             * @param {Object} data
+             * @returns {undefined}
+             */
             addMessage: function (data) {
                 data.value = data.value.replace(/\#+([a-zA-Z_]{1,20})/g, '<a href="#">#$1</a>');
                 this.Messages.push(data);
@@ -137,6 +252,10 @@ var ViewModel = new (function () {
                     }
                 });
             },
+            /**
+             * What was the time in ms, that the last message was added to the list
+             * @returns {Number}
+             */
             getMostRecentMessageTime: function () {
                 var lastTime = 0;
                 for (var i = 0; i < this.Messages.length; i++) {
@@ -147,6 +266,11 @@ var ViewModel = new (function () {
                 }
                 return lastTime;
             },
+            /**
+             * Is the client already listed as being subscribed to a channel
+             * @param {String} topic
+             * @returns {Boolean}
+             */
             isSubscribed: function (topic) {
                 for (var i = 0; i < this.Channels.length; i++) {
                     var e = this.Channels[i];
@@ -156,6 +280,12 @@ var ViewModel = new (function () {
                 }
                 return false;
             },
+            /**
+             * Can we find the channel on the list of currently active channels?
+             * If we can, what is its ID?
+             * @param {String} topic
+             * @returns {Number|Boolean}
+             */
             ChannelListIndex: function (topic) {
                 for (var i = 0; i < this.Channels.length; i++) {
                     var e = this.Channels[i];
@@ -165,6 +295,11 @@ var ViewModel = new (function () {
                 }
                 return false;
             },
+            /**
+             * Subscribe to a new channel.
+             * @param {String} topic
+             * @returns {undefined}
+             */
             Subscribe: function (topic) {
                 this.addMessage({
                     name: 'SYSTEM',
@@ -182,6 +317,11 @@ var ViewModel = new (function () {
                     });
                 }
             },
+            /**
+             * unSubscribe from a channel.
+             * @param {String} topic
+             * @returns {undefined}
+             */
             unSubscribe: function (topic) {
                 this.addMessage({
                     name: 'SYSTEM',

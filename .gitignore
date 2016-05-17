@@ -49,3 +49,4 @@ Temporary Items
 /nbproject/
 Server/Plugins/vendor/
 Server/Plugins/Classes/connect.php
+Server/Plugins/composer.lock

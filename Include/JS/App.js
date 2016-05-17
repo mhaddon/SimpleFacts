@@ -25,6 +25,6 @@ document.addEventListener('DOMContentLoaded', function () {
 function uniq(a) {
     var seen = {};
     return a.filter(function (item) {
-        return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+        return seen.hasOwnProperty(item.toLowerCase()) ? false : (seen[item.toLowerCase()] = true);
     });
 }

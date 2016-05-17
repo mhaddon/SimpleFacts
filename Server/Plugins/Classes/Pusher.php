@@ -1,6 +1,6 @@
 <?php
 
-namespace MyApp;
+namespace MessangerServer;
 
 use Ratchet\ConnectionInterface;
 use Ratchet\Wamp\WampServerInterface;
@@ -12,6 +12,9 @@ class Pusher implements WampServerInterface {
     protected $clients;
     protected $Topics;
 
+    /**
+     * When the server is started
+     */
     public function __construct() {
         $this->clients = array();
         echo "\r\nServer listening and waiting.\r\n";
@@ -51,15 +54,19 @@ class Pusher implements WampServerInterface {
             if ((isset($event['name'])) && (strlen($event['name']) > 2)) {
                 $event['ID'] = $conn->resourceId;
                 $event['Type'] = 'nameChange';
-                $topic->broadcast($event);
+                $topic->broadcast((object) array(
+                            'ID' => $conn->resourceId,
+                            'Type' => 'nameChange',
+                            'name' => htmlspecialchars($event['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false)
+                ));
             }
-        } else {
+        } else if (strtolower($topic->getId()) === $topic->getId()) {
             $this->parseData($topic, (object) array(
                         'time' => date("H:i:s"),
                         'datetime' => date("Y-m-d H:i:s"),
                         'ms' => microtime(true),
-                        'name' => $event['name'],
-                        'msg' => $event['msg']
+                        'name' => htmlspecialchars($event['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false),
+                        'msg' => htmlspecialchars($event['msg'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false)
                     ), $conn);
         }
     }
@@ -137,7 +144,7 @@ class Pusher implements WampServerInterface {
 
         $stmt->bindValue(":Name", $data->name, \PDO::PARAM_STR);
         $stmt->bindValue(":Topic", $data->topic, \PDO::PARAM_STR);
-        $stmt->bindValue(":IP", $data->ip);
+        $stmt->bindValue(":IP", $data->ip, \PDO::PARAM_STR);
         $stmt->bindValue(":Content", $data->msg, \PDO::PARAM_STR);
         $stmt->bindValue(":DateTime", $data->datetime, \PDO::PARAM_STR);
         $stmt->bindValue(":ms", $data->ms, \PDO::PARAM_INT);

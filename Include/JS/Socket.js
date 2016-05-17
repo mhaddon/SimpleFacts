@@ -147,6 +147,11 @@ SocketController.prototype.Subscribe = function (topic) {
     if (typeof topic === 'string') {
         topic = [topic];
     }
+    
+    /**
+     * Make sure all the topics are unique
+     */
+    topic = uniq(topic);
 
     /**
      * Loop through all the entered topics, then if they have not subscribed
@@ -181,13 +186,18 @@ SocketController.prototype.unSubscribe = function (topic) {
     if (typeof topic === 'string') {
         topic = [topic];
     }
+    
+    /**
+     * Make sure all the topics are unique
+     */
+    topic = uniq(topic);
 
     /**
      * Loop through all the entered topics, then if they have not subscribed
      * to that topic, then we will subscribe them to it.
      */
     for (var i = 0; i < topic.length; i++) {
-        var e = topic[i];
+        var e = topic[i].toLowerCase();
         if (ViewModel.isSubscribed(e)) {
             this.conn.unsubscribe(e);
             ViewModel.unSubscribe(e);
