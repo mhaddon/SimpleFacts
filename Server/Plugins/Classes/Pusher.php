@@ -68,6 +68,21 @@ class Pusher implements WampServerInterface {
     }
 
     /**
+     * When a client has subscribed to a topic we need to make sure we have this
+     * topic saved in our list of topics.
+     * 
+     * This is so if we need to, we can broadcast to this topic unprompted. Also
+     * we need a list of active topics.
+     * 
+     * @param ConnectionInterface $conn
+     * @param type $Topic
+     */
+    public function onSubscribe(ConnectionInterface $conn, $Topic) {
+        $this->Topics[$Topic->getId()] = $Topic;
+        echo $conn->resourceId . ' subcribed: ' . $Topic . "\r\n";
+    }
+
+    /**
      * This method is a callback which is ran when a client unsubscribes from a
      * topic
      * 
@@ -77,12 +92,13 @@ class Pusher implements WampServerInterface {
     public function onUnSubscribe(ConnectionInterface $conn, $topic) {
         echo 'test';
     }
-
-    public function onSubscribe(ConnectionInterface $conn, $Topic) {
-        $this->Topics[$Topic->getId()] = $Topic;
-        echo $conn->resourceId . ' subcribed: ' . $Topic . "\r\n";
-    }
     
+    /**
+     * This method broadcasts the current list of users to all connected users.
+     * because $this->clients is stored in an array with non-incremental indexes,
+     * we need to turn the indexes into the incremental fashion for json.
+     * Thats the purpose of array_values();
+     */
     private function updateUserList() {
         if (isset($this->Topics["System"])) {
             $this->Topics["System"]->broadcast((object) array(
@@ -92,11 +108,28 @@ class Pusher implements WampServerInterface {
         }
     }
 
+    /**
+     * 
+     * @param ConnectionInterface $conn
+     * @param type $id
+     * @param type $topic
+     * @param array $params
+     */
     public function onCall(ConnectionInterface $conn, $id, $topic, array $params) {
         // In this application if clients send data it's because the user hacked around in console
         $conn->callError($id, $topic, 'You are not allowed to make calls')->close();
     }
 
+    /**
+     * This is a callback that is ran when a client publishes something to a
+     * topic.
+     * 
+     * @param ConnectionInterface $conn
+     * @param type $topic
+     * @param array $event
+     * @param array $exclude
+     * @param array $eligible
+     */
     public function onPublish(ConnectionInterface $conn, $topic, $event, array $exclude, array $eligible) {
         if ($topic->getId() === 'System') {
             if ((isset($event['name'])) && (strlen($event['name']) > 2)) {
@@ -112,24 +145,43 @@ class Pusher implements WampServerInterface {
                         'time' => date("H:i:s"),
                         'datetime' => date("Y-m-d H:i:s"),
                         'ms' => microtime(true),
+                        'ID' => $event['ID'],
                         'name' => htmlspecialchars($event['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false),
                         'msg' => htmlspecialchars($event['msg'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false)
                     ), $conn);
         }
     }
 
+    /**
+     * If the server runs into a critical error.
+     * 
+     * @param ConnectionInterface $conn
+     * @param \Exception $e
+     */
     public function onError(ConnectionInterface $conn, \Exception $e) {
         echo "Error: " . $e->getMessage();
         $conn->close();
     }
 
     /**
-     * @param string JSON'ified string we'll receive from ZeroMQ
+     * This method parses the data we recieved from the connected client.
+     * It primarily broadcasts this information back out to clients subscribed
+     * to said topic. 
+     * It also sends a request to zmq to save the message information into the
+     * database async.
+     * @param type $topic
+     * @param type $data
+     * @param type $conn
      */
     public function parseData($topic, $data, $conn = null) {
+        /**
+         * Broadcast this information to all subscribed clients
+         */
         $topic->broadcast($data);
 
-
+        /**
+         * We connect to the zmq message queue
+         */
         $context = new \ZMQContext();
         $socket = $context->getSocket(\ZMQ::SOCKET_PUSH, 'my pusher');
         $socket->connect("tcp://localhost:5555");
@@ -168,7 +220,9 @@ class Pusher implements WampServerInterface {
 
         $data->ip = $IP;
 
-
+        /**
+         * Send this data to zmq to save it to the database async
+         */
         $socket->send(json_encode($data));
     }
 }

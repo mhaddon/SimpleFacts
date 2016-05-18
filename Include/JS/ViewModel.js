@@ -1,15 +1,15 @@
 /**
  * When adapting Vue it seems that you dont really need to be able to reference
  * the components in javascript after you have created the vue object.
- * 
+ *
  * So instead of having loads of random components accessable globally, i have
  * contained them all in one function/class.
- * 
+ *
  * I could have nestled these components into the parent, but i think that
  * would have made the code unreadable.
- * 
+ *
  * This class returns the vue model controller.
- * 
+ *
  * @returns {Vue}
  */
 var ViewModel = new (function () {
@@ -94,7 +94,7 @@ var ViewModel = new (function () {
         methods: {
             /**
              * Subscribe the client to this channel
-             * 
+             *
              * @param {channelListComponent} Channel
              * @returns {undefined}
              */
@@ -103,7 +103,7 @@ var ViewModel = new (function () {
             },
             /**
              * unSubscribe the client from this channel
-             * 
+             *
              * @param {channelListComponent} Channel
              * @returns {undefined}
              */
@@ -116,13 +116,13 @@ var ViewModel = new (function () {
     /**
      * Create the parent vue controller which incorporates all of the above
      * components.
-     * This class is what the ViewModel class returns. 
+     * This class is what the ViewModel class returns.
      */
     var pageViewmodel = new Vue({
         el: '#vueApp',
         data: {
             /**
-             * All of the rendered messages. 
+             * All of the rendered messages.
              * See messageListComponent to see its use.
              */
             Messages: [],
@@ -162,6 +162,20 @@ var ViewModel = new (function () {
                 for (var i = 0; i < this.Users.length; i++) {
                     var e = this.Users[i];
                     if (e.ID === ID) {
+                        return i;
+                    }
+                }
+                return false;
+            },
+            /**
+             * Finds the index of a specific message id in the messagelist.
+             * @param {String} ID
+             * @returns {Number|Boolean}
+             */
+            MessageListIndex: function (ID) {
+                for (var i = 0; i < this.Messages.length; i++) {
+                    var e = this.Messages[i];
+                    if ((typeof e.ID !== 'undefined') && (e.ID === ID)) {
                         return i;
                     }
                 }
@@ -214,43 +228,53 @@ var ViewModel = new (function () {
              * This method adds a new message to the message log.
              * It also is responsible for causing the page to jump down with the
              * new message.
-             * 
+             *
              * @param {Object} data
              * @returns {undefined}
              */
             addMessage: function (data) {
-                data.value = data.value.replace(/\#+([a-zA-Z_]{1,20})/g, '<a href="#">#$1</a>');
-                this.Messages.push(data);
-
                 /**
-                 * Vue does not instantly add the messages to the page. It instead
-                 * seems to add the item after a short delay. This means that if we
-                 * want to update the DOM after the message has been added, we also
-                 * need to wait.
-                 *
-                 * The below callback runs after Vue has finished updating the DOM.
-                 *
-                 * The following block of code is responsible for causing the message
-                 * history scrollbar to update and scrolldown after the message is
-                 * posted, this is so the user can instantly see the new message, if
-                 * it otherwise would have been hidden by overflow-y.
-                 *
-                 * This block of code also makes it so the page does not scroll down
-                 * if the user does not seem to be currently interested in viewing
-                 * the lastest messages. (IE they have scrolled up purposefully).
-                 *
-                 * @returns {undefined}
+                 * If a client is connected to multiple channels, and they recieve
+                 * a message that goes out to these channels, then the client
+                 * will recieve the message multiple times.
+                 * 
+                 * This ensures that the message will not be added multiple times
+                 * to the message log.
                  */
-                Vue.nextTick(function () {
-                    var scrollTop = Scene.Data.Elements.List.messageHistory.scrollTop;
-                    var childHeight = Scene.Data.Elements.List.messageHistoryUL.getBoundingClientRect().height;
-                    var parentHeight = Scene.Data.Elements.List.messageHistory.getBoundingClientRect().height;
-                    var maxYScroll = childHeight - parentHeight;
+                if (!this.MessageListIndex(data.ID)) {
+                    data.value = data.value.replace(/\#+([a-zA-Z_]{1,20})/g, '<a href="#">#$1</a>');
+                    this.Messages.push(data);
 
-                    if ((childHeight > parentHeight) && (maxYScroll - scrollTop < 100)) {
-                        Scene.Data.Elements.List.messageHistory.scrollTop = maxYScroll + 60;
-                    }
-                });
+                    /**
+                     * Vue does not instantly add the messages to the page. It instead
+                     * seems to add the item after a short delay. This means that if we
+                     * want to update the DOM after the message has been added, we also
+                     * need to wait.
+                     *
+                     * The below callback runs after Vue has finished updating the DOM.
+                     *
+                     * The following block of code is responsible for causing the message
+                     * history scrollbar to update and scrolldown after the message is
+                     * posted, this is so the user can instantly see the new message, if
+                     * it otherwise would have been hidden by overflow-y.
+                     *
+                     * This block of code also makes it so the page does not scroll down
+                     * if the user does not seem to be currently interested in viewing
+                     * the lastest messages. (IE they have scrolled up purposefully).
+                     *
+                     * @returns {undefined}
+                     */
+                    Vue.nextTick(function () {
+                        var scrollTop = Scene.Data.Elements.List.messageHistory.scrollTop;
+                        var childHeight = Scene.Data.Elements.List.messageHistoryUL.getBoundingClientRect().height;
+                        var parentHeight = Scene.Data.Elements.List.messageHistory.getBoundingClientRect().height;
+                        var maxYScroll = childHeight - parentHeight;
+
+                        if ((childHeight > parentHeight) && (maxYScroll - scrollTop < 100)) {
+                            Scene.Data.Elements.List.messageHistory.scrollTop = maxYScroll + 60;
+                        }
+                    });
+                }
             },
             /**
              * What was the time in ms, that the last message was added to the list

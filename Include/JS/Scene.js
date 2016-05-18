@@ -182,12 +182,23 @@ SceneController.prototype.onMessageSubmitted = function (e) {
     if ((Message.length > 0) && (Socket.Data.connected)) {
 
         var Tags = uniq(Message.match(/#+([a-zA-Z_]{1,20})/g));
+        
+        /**
+         * We must try to create a unique id for this message. So we will get
+         * the current time in ms, and we will add a random amount to the number.
+         * 
+         * There will be possibilities for collisions, but I think for this demo
+         * the chance of collision is reasonably low.
+         * @type Number
+         */
+        var messageID = (((new Date().getTime()) * 1000) + (Math.random() * 1000)).toString(36);
 
         if (Tags !== null) {
             for (var i = 0; i < Tags.length; i++) {
                 var e = Tags[i];
                 Socket.Subscribe(e);
                 Socket.Broadcast(e, {
+                    ID: messageID,
                     msg: Message,
                     name: this.Data.User.Name
                 });

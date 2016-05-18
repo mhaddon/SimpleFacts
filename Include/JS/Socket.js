@@ -248,6 +248,7 @@ SocketController.prototype.onBroadcast = function (topic, data) {
          * message logs.
          */
         ViewModel.addMessage({
+            ID: data.ID,
             name: data.name,
             value: data.msg,
             time: data.time,
