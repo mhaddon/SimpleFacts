@@ -5,8 +5,8 @@
     },
     "autoload": {
         "classmap": [
-            "Classes/Pusher.php",
-            "Classes/DB.php"
+            "Classes/DB.php",
+            "Classes/Pusher.php"
         ]
     }
 }

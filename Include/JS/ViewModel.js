@@ -177,16 +177,16 @@ var ViewModel = new (function () {
             addUser: function (data) {
                 this.addMessage({
                     name: 'SYSTEM',
-                    value: data.name + ' has joined the server',
+                    value: data.Name + ' has joined the server',
                     time: '',
                     ms: this.getMostRecentMessageTime() + 1
                 });
 
                 if (this.UserListIndex(data.ID) !== false) {
-                    this.Users[this.UserListIndex(data.ID)].name = data.name;
+                    this.Users[this.UserListIndex(data.ID)].name = data.Name;
                 } else {
                     this.Users.push({
-                        name: data.name,
+                        name: data.Name,
                         ID: data.ID
                     });
                 }

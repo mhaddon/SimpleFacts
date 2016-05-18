@@ -233,10 +233,13 @@ SocketController.prototype.onBroadcast = function (topic, data) {
      */
     if (topic === 'System') {
         if (data.Type === 'nameChange') {
-            if (data.name.length === 0) {
-                ViewModel.removeUser(data);
-            } else {
-                ViewModel.addUser(data);
+            for (var i = 0; i < data.Data.length; i++) {
+                var e = data.Data[i];
+                if (e.Name.length === 0) {
+                    ViewModel.removeUser(e);
+                } else {
+                    ViewModel.addUser(e);
+                }
             }
         }
     } else {

@@ -32,6 +32,13 @@ require __DIR__ . '/Plugins/vendor/autoload.php';
 $loop = React\EventLoop\Factory::create();
 $pusher = new MessangerServer\Pusher;
 
+/**
+ * Connect to the database.
+ * This should probably be moved away from here so it occures asyncronously like
+ * the saving of data.
+ */
+$database = new MessangerServer\db;
+
 
 /**
  * Create our listener that listens for external socket connections.
@@ -47,7 +54,7 @@ $webServer = new Ratchet\Server\IoServer(new Ratchet\Http\HttpServer(new Ratchet
 $context = new React\ZMQ\Context($loop);
 $pull = $context->getSocket(\ZMQ::SOCKET_PULL);
 $pull->bind('tcp://127.0.0.1:5555'); // Binding to 127.0.0.1 means the only client that can connect is itself
-$pull->on('message', array($pusher, 'saveData')); //When zmq receives a message we...
+$pull->on('message', array($database, 'saveMessage')); //When zmq receives a message we...
 
 /**
  * Start our server for listening for ZMQ and Ratchet websocket connections

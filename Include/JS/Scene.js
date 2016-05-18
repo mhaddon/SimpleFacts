@@ -22,11 +22,15 @@ var SceneController = function () {
             },
             Form: {
                 Reconnect: null,
+                ChannelInput: null,
+                MessageInput: null,
+                NameInput: null
             },
             Field: {
                 Message: null,
                 Name: null,
-                ContentEditable: null
+                ContentEditable: null,
+                Channel: null
             },
             Error: {
                 displayName: null
@@ -55,7 +59,8 @@ var SceneController = function () {
         attachListeners: this.attachListeners,
         onMessageSubmitted: this.onMessageSubmitted,
         onNameSubmitted: this.onNameSubmitted,
-        onReconnectSubmitted: this.onReconnectSubmitted
+        onReconnectSubmitted: this.onReconnectSubmitted,
+        onChannelSubmitted: this.onChannelSubmitted
     }
 }
 
@@ -82,6 +87,7 @@ SceneController.prototype.loadElementCache = function () {
     this.Data.Elements.Form.Reconnect = document.getElementById('ReconnectForm');
     this.Data.Elements.Form.MessageInput = document.getElementById('MessageInputForm');
     this.Data.Elements.Form.NameInput = document.getElementById('NameInputForm');
+    this.Data.Elements.Form.ChannelInput = document.getElementById('ChannelInputForm');
 
     /**
      * Elements that are HTML form fields
@@ -89,6 +95,7 @@ SceneController.prototype.loadElementCache = function () {
     this.Data.Elements.Field.Message = document.querySelector('#MessageInputForm input');
     this.Data.Elements.Field.Name = document.querySelector('#NameInputForm input');
     this.Data.Elements.Field.ContentEditable = document.getElementById('newcomment');
+    this.Data.Elements.Field.Channel = document.querySelector('#ChannelInputForm input');
 
     /**
      * Elements that are used for error messages
@@ -114,6 +121,28 @@ SceneController.prototype.attachListeners = function () {
     this.Data.Elements.Form.NameInput.onsubmit = this.onNameSubmitted.bind(this);
     this.Data.Elements.Form.MessageInput.onsubmit = this.onMessageSubmitted.bind(this);
     this.Data.Elements.Form.Reconnect.onsubmit = this.onReconnectSubmitted.bind(this);
+    this.Data.Elements.Form.ChannelInput.onsubmit = this.onChannelSubmitted.bind(this);
+}
+
+/**
+ * This method is a callback, which is ran when the user inputs a channel name
+ * to connect to
+ * 
+ * @param {Object} e - Event information
+ * @returns {undefined}
+ */
+SceneController.prototype.onChannelSubmitted = function(e) {
+    e.preventDefault();
+    var matches = uniq(this.Data.Elements.Field.Channel.value.match(/\#+([a-zA-Z_]{1,20})/g));
+    if (matches) {
+        for (var i = 0; i < matches.length; i++) {
+            var e = matches[i];
+            Socket.Subscribe(e);
+        }
+        this.Data.Elements.Field.Channel.value = '';
+    } else {
+        alert('invalid channel name');
+    }
 }
 
 /**
