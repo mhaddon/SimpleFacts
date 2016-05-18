@@ -158,7 +158,7 @@ SocketController.prototype.Subscribe = function (topic) {
      * to that topic, then we will subscribe them to it.
      */
     for (var i = 0; i < topic.length; i++) {
-        var e = topic[i];
+        var e = topic[i].toLowerCase();
         if (!ViewModel.isSubscribed(e)) {
             this.conn.subscribe(e, this.onBroadcast.bind(this));
             if (e !== 'System') {
@@ -213,7 +213,7 @@ SocketController.prototype.unSubscribe = function (topic) {
  * @returns {undefined}
  */
 SocketController.prototype.Broadcast = function (topic, data) {
-    this.conn.publish(topic, data);
+    this.conn.publish(topic.toLowerCase(), data);
 }
 
 /**
