@@ -242,7 +242,7 @@ var ViewModel = new (function () {
                  * to the message log.
                  */
                 if (!this.MessageListIndex(data.ID)) {
-                    data.value = data.value.replace(/\#+([a-zA-Z_]{1,20})/g, '<a href="#">#$1</a>');
+                    data.value = data.value.replace(/\#+([a-zA-Z_]{1,20})/g, '<a href="#" onclick="addTagToChat(\'$1\')">#$1</a>');
                     this.Messages.push(data);
 
                     /**

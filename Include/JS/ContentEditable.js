@@ -38,7 +38,7 @@ var ContentEditableController = function (elementID) {
     this.Data = {
         PreviousText: ""
     }
-    
+
     /**
      * This return function allows us to be able to see the functions and variables
      * that we define with this.
@@ -52,7 +52,8 @@ var ContentEditableController = function (elementID) {
         onRangeChanged: this.onRangeChanged,
         onKeyPressed: this.onKeyPressed,
         get_text_nodes_in: this.get_text_nodes_in,
-        set_range: this.set_range
+        set_range: this.set_range,
+        setText: this.setText
     }
 }
 
@@ -90,25 +91,27 @@ ContentEditableController.prototype.onContentChanged = function (e) {
     if (this.Data.PreviousText !== Text) {
         this.Data.PreviousText = Text;
 
-        var range = window.getSelection().getRangeAt(0);
-        var end_node = range.endContainer;
-        var end = range.endOffset;
-        if (end_node != this.el) {
-            var text_nodes = this.get_text_nodes_in(this.el);
-            for (var i = 0; i < text_nodes.length; ++i) {
-                if (text_nodes[i] == end_node) {
-                    break;
+        if (window.getSelection().rangeCount > 0) {
+            var range = window.getSelection().getRangeAt(0);
+            var end_node = range.endContainer;
+            var end = range.endOffset;
+            if (end_node != this.el) {
+                var text_nodes = this.get_text_nodes_in(this.el);
+                for (var i = 0; i < text_nodes.length; ++i) {
+                    if (text_nodes[i] == end_node) {
+                        break;
+                    }
+                    end += text_nodes[i].length;
                 }
-                end += text_nodes[i].length;
+            }
+            var html = this.el.innerHTML;
+            if (/\&nbsp;$/.test(html) && Text.length == end) {
+                end = end - 1;
+                this.set_range(end, end, this.el);
+                return;
             }
         }
-        var html = this.el.innerHTML;
-        if (/\&nbsp;$/.test(html) && Text.length == end) {
-            end = end - 1;
-            this.set_range(end, end, this.el);
-            return;
-        }
-        
+
         /**
          * This is the part of the code that you will want to replace a string
          * with a tag or something else.
@@ -228,6 +231,18 @@ ContentEditableController.prototype.set_range = function (start, end, element) {
     var selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
+}
+
+/**
+ * Safely add new text to this element remotely.
+ * 
+ * @param {String} Text
+ * @returns {undefined}
+ */
+ContentEditableController.prototype.setText = function (Text) {
+    ContentEditable.el.innerText = Text;
+    this.onContentChanged();
+    this.onRangeChanged();
 }
 
 /**

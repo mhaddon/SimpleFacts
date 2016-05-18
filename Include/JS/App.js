@@ -28,3 +28,14 @@ function uniq(a) {
         return seen.hasOwnProperty(item.toLowerCase()) ? false : (seen[item.toLowerCase()] = true);
     });
 }
+
+/**
+ * Adds a tag to the message input box, this is so the user can quickly respond
+ * to something someone has said.
+ * 
+ * @param {String} a
+ * @returns {undefined}
+ */
+function addTagToChat(TagName) {
+    ContentEditable.setText(ContentEditable.el.innerText + '#' + TagName);
+}
