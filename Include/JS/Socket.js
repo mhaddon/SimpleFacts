@@ -231,7 +231,7 @@ SocketController.prototype.onBroadcast = function (topic, data) {
      * If the message comes from the System topic, then it is a status update
      * of something, and is needs to be handled differently than normal messages.
      */
-    if (topic === 'System') {
+    if (topic === 'system') {
         if (data.Type === 'nameChange') {
             for (var i = 0; i < data.Data.length; i++) {
                 var e = data.Data[i];

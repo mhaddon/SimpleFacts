@@ -18,6 +18,7 @@ class Pusher implements WampServerInterface {
      * @var array
      */
     protected $clients;
+
     /**
      * This is an array of all the currently active topics
      * @var array
@@ -47,10 +48,11 @@ class Pusher implements WampServerInterface {
             "ID" => $conn->resourceId,
             "Name" => "Guest"
         );
+        
+        $this->updateUserList(true, array(), array($conn->resourceId));
 
         echo "\r\nNew Client Connected ({$conn->resourceId}) (" . count($this->clients) . " total)\r\n";
-        
-        $this->updateUserList();
+
     }
 
     /**
@@ -63,8 +65,8 @@ class Pusher implements WampServerInterface {
         unset($this->clients[$conn->resourceId]);
 
         echo "\r\nClient Terminated (" . count($this->clients) . " total)\r\n";
-        
-        $this->updateUserList();
+
+        $this->updateUserList(false, array($conn->resourceId), array());
     }
 
     /**
@@ -92,19 +94,34 @@ class Pusher implements WampServerInterface {
     public function onUnSubscribe(ConnectionInterface $conn, $topic) {
         echo 'test';
     }
-    
+
     /**
      * This method broadcasts the current list of users to all connected users.
      * because $this->clients is stored in an array with non-incremental indexes,
      * we need to turn the indexes into the incremental fashion for json.
      * Thats the purpose of array_values();
+     * 
+     * @param array $exclude A list of session IDs the message should be excluded from (blacklist)
+     * @param array $eligible A list of session IDs the message should be sent to (whitelist)
      */
-    private function updateUserList() {
-        if (isset($this->Topics["System"])) {
-            $this->Topics["System"]->broadcast((object) array(
-                'Type' => 'nameChange',
-                'Data' => array_values($this->clients))
-            );
+    private function updateUserList($CompleteUpdate, array $exclude = array(), array $eligible = array()) {
+        if (isset($this->Topics["system"])) {
+            if ($CompleteUpdate) {
+                $this->Topics["system"]->broadcast((object) array(
+                            'Type' => 'nameChange',
+                            'Data' => array_values($this->clients)
+                        ), $exclude, $eligible
+                );
+            } else {
+                print_r(array($this->clients[$exclude[0]]));
+                print_r($this->clients[$exclude[0]]);
+                print_r($exclude[0]);
+                $this->Topics["system"]->broadcast((object) array(
+                            'Type' => 'nameChange',
+                            'Data' => array($this->clients[$exclude[0]])
+                        ), $exclude, $eligible
+                );
+            }
         }
     }
 
@@ -127,18 +144,19 @@ class Pusher implements WampServerInterface {
      * @param ConnectionInterface $conn
      * @param type $topic
      * @param array $event
-     * @param array $exclude
-     * @param array $eligible
+     * @param array $exclude A list of session IDs the message should be excluded from (blacklist)
+     * @param array $eligible A list of session IDs the message should be sent to (whitelist)
      */
     public function onPublish(ConnectionInterface $conn, $topic, $event, array $exclude, array $eligible) {
-        if ($topic->getId() === 'System') {
+        if (strtolower($topic->getId()) === 'system') {
             if ((isset($event['name'])) && (strlen($event['name']) > 2)) {
                 $this->clients[$conn->resourceId] = array(
                     "ID" => $conn->resourceId,
                     "Name" => htmlspecialchars($event['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false)
                 );
-        
-                $this->updateUserList();
+                
+                $this->updateUserList(true, array(), array($conn->resourceId));
+                $this->updateUserList(false, array($conn->resourceId), array());
             }
         } else if (strtolower($topic->getId()) === $topic->getId()) {
             $this->parseData($topic, (object) array(
@@ -225,4 +243,5 @@ class Pusher implements WampServerInterface {
          */
         $socket->send(json_encode($data));
     }
+
 }

@@ -7,6 +7,9 @@ class db {
     /**
      * This is the connection information that PDO uses to store its connection
      * to the database
+     * 
+     * View /Server/MySQL.sql for the exact code used for the database.
+     * 
      * @var object 
      */
     protected $conn;
@@ -37,6 +40,9 @@ class db {
      * The purpose is to try to stop anyone from being clever and breaking into
      * the database.
      * 
+     * View /Server/MySQL.sql for the exact code used for the mysql routine and
+     * database.
+     * 
      * @param String $JSONdata - A JSON representation of the data we want to save
      */
     public function saveMessage($JSONdata) {
@@ -62,10 +68,19 @@ class db {
         echo "\r\nmessage saved to database\r\n";
     }
     
-    public function retrieveMessages($data) {
-    
+    public function retrieveMessages($topics) {
+        $stmt = $this->conn->prepare("
+                        CALL retrieveHistory(:TopicList)
+                        ");
+        
+        $stmt->bindValue(":TopicList", $topics, \PDO::PARAM_STR);
+        if ($stmt->execute()) {
+            while ($row = $stmt->fetch()) {
+                print_r($row);
+            }
+        }
+        
+        echo "\r\nmessage saved to database\r\n";
     }
 }
-
-
 ?>
