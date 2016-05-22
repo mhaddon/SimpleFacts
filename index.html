@@ -94,7 +94,7 @@
                                 <messagelist-component :Messages="Messages"></messagelist-component>
                             </div>
                             <form id='MessageInputForm' class='InputForm'>
-                                <div class='divTextBox highlightTags' id='newcomment' placeholder='Tell me something new!' contenteditable='true'></div>
+                                <div class='divTextBox highlightTags' id='newcomment' data-placeholder='Tell me something new!' contenteditable='true'></div>
                                 <button>
                                     <i class="fa fa-comment-o" aria-hidden="true"></i>
                                 </button>
@@ -123,7 +123,7 @@
                                 <channellist-component :Channels="Channels"></channellist-component>
                             </div>
                             <form id='ChannelInputForm' class='InputForm'>
-                                <input type='text' value='' placeholder='Enter Channel Name'/>
+                                <div class='divTextBox highlightTags' id='channelName' data-placeholder='Enter Channel Name' contenteditable='true'></div>
                                 <button>
                                     <i class="fa fa-comments-o" aria-hidden="true"></i>
                                 </button>

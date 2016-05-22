@@ -68,6 +68,20 @@ class db {
         echo "\r\nmessage saved to database\r\n";
     }
     
+    /**
+     * This method retrieves recent messages from the database according to a list
+     * of topics you have inputted.
+     * 
+     * You pass the topic names through seperated by a ,. For example:
+     * '#Cats,#Dogs,#Sheep'
+     * or just
+     * '#Cats'
+     * 
+     * View /Server/MySQL.sql for the exact code used for the mysql routine and
+     * database.
+     * 
+     * @param String $topics
+     */
     public function retrieveMessages($topics) {
         $stmt = $this->conn->prepare("
                         CALL retrieveHistory(:TopicList)

@@ -8,7 +8,8 @@
 document.addEventListener('DOMContentLoaded', function () {
     Scene.loadElementCache();
     Scene.attachListeners();
-    ContentEditable.attachListeners();
+    MessageBoxInput.attachListeners();
+    ChannelBoxInput.attachListeners();
     Socket.connect();
 });
 
@@ -37,5 +38,30 @@ function uniq(a) {
  * @returns {undefined}
  */
 function addTagToChat(TagName) {
-    ContentEditable.setText(ContentEditable.el.innerText + '#' + TagName);
+    MessageBoxInput.setText(MessageBoxInput.el.innerText + '#' + TagName);
+}
+
+/**
+ * This function gets the closest parent of a Javascript element with a particular
+ * tag name.
+ * If no element is found than it returns null.
+ * 
+ * Credit to this Stackoverflow post: http://stackoverflow.com/a/18664016/1507692
+ * 
+ * @param {Object} el - Javascript Document Element
+ * @param {String} tag - The tag name we are looking for
+ * @returns {el.parentNode|null}
+ */
+function getClosest(el, tag) {
+    // this is necessary since nodeName is always in upper case
+    tag = tag.toUpperCase();
+    do {
+        if (el.nodeName === tag) {
+            // tag name is found! let's return it. :)
+            return el;
+        }
+    } while (el = el.parentNode);
+
+    // not found :(
+    return null;
 }

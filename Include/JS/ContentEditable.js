@@ -165,12 +165,17 @@ ContentEditableController.prototype.onRangeChanged = function (e) {
  */
 ContentEditableController.prototype.onKeyPressed = function (e) {
     /**
-     * So if the user presses the enter key, then we will tell the Scene to update
-     * the DOM to recognise this change. The Scene will then pass the message to
-     * the Socket which will send this information to the server.
+     * If the user has pressed the enter key then we need to submit this elements
+     * parent form.
+     * We do not trigger the actual form submit() event as that seems to bypass
+     * any listeners we have in place to detect the form being submitted.
+     * Instead we call onsubmit(), which calls any listeners we have attached.
      */
     if (e.which === 13) {
-        Scene.onMessageSubmitted(e);
+        var parentForm = getClosest(this.el, 'form');
+        if (parentForm !== null) {
+            parentForm.onsubmit(e);
+        }
     }
 }
 
@@ -240,7 +245,7 @@ ContentEditableController.prototype.set_range = function (start, end, element) {
  * @returns {undefined}
  */
 ContentEditableController.prototype.setText = function (Text) {
-    ContentEditable.el.innerText = Text;
+    this.el.innerText = Text;
     this.onContentChanged();
     this.onRangeChanged();
 }
@@ -260,4 +265,10 @@ ContentEditableController.prototype.setText = function (Text) {
  * 
  * @type ContentEditableController
  */
-var ContentEditable = new ContentEditableController('newcomment');
+var MessageBoxInput = new ContentEditableController('newcomment');
+
+/**
+ * 
+ * @type ContentEditableController
+ */
+var ChannelBoxInput = new ContentEditableController('channelName');

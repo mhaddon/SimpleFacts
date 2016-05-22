@@ -298,7 +298,7 @@ var ViewModel = new (function () {
             isSubscribed: function (topic) {
                 for (var i = 0; i < this.Channels.length; i++) {
                     var e = this.Channels[i];
-                    if ((e.joined === true) && (e.name === topic)) {
+                    if ((e.joined === true) && (e.name.toLowerCase() === topic.toLowerCase())) {
                         return true;
                     }
                 }

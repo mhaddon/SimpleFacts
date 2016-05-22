@@ -290,14 +290,22 @@ form .fa {
 }
 
 .divTextBox > a {
-    color: #337ab7 !important;    
+    color: #337ab7 !important;
 }
 
 .divTextBox:after {
     position:absolute;
     top:0px;
     left:0px;
-    content:"Type your thoughts here!";
+    /**
+    *   By setting the content to data-placeholder, we can easily dynamically
+    *   change the placeholder message.
+    *   Furthermore, we use data-placeholder rather than placeholder, as
+    *   placeholder is only a valid HTML attribute for input and textarea fields.
+    *   It is not valid for divs and other HTML elements to use this attribute.
+    *   (Not that it really matters)
+    */
+    content:attr(data-placeholder);
     font-size:18px;
     font-family:"Roboto",Arial,Helvetica,sans-serif;
     font-weight:400;
@@ -307,7 +315,7 @@ form .fa {
 
     pointer-events:none;
 
-    transition: opacity 0.5s ease;    
+    transition: opacity 0.5s ease;
 }
 
 .divTextBox.hasContent:after, .divTextBox:focus:after {

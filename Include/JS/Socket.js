@@ -89,6 +89,23 @@ SocketController.prototype.onOpen = function () {
     this.Data.connected = true;
 
     /**
+     * If we already have connected channels recorded, then the client disconnected
+     * and is currently trying to reconnect.
+     * Subscriptions are wiped after a disconnect, and so we must reconnect
+     * to all the clients subscribed subscriptions.
+     * 
+     */
+    if (ViewModel.Channels.length > 0) {
+        for (var i = 0; i < ViewModel.Channels.length; i++) {
+            var e = ViewModel.Channels[i];
+            if ((e.joined) && (e.name.match(/#+([a-zA-Z_]{1,20})/g))) {
+                this.conn.subscribe(e.name, this.onBroadcast.bind(this));
+            }
+        }
+        this.conn.subscribe('system', this.onBroadcast.bind(this));
+    }
+
+    /**
      * Subscribe to a list of example topics
      */
     this.Subscribe(['System', '#Cats', '#Dogs', '#ApacheHelicopters']);
@@ -147,7 +164,7 @@ SocketController.prototype.Subscribe = function (topic) {
     if (typeof topic === 'string') {
         topic = [topic];
     }
-    
+
     /**
      * Make sure all the topics are unique
      */
@@ -161,7 +178,7 @@ SocketController.prototype.Subscribe = function (topic) {
         var e = topic[i].toLowerCase();
         if (!ViewModel.isSubscribed(e)) {
             this.conn.subscribe(e, this.onBroadcast.bind(this));
-            if (e !== 'System') {
+            if (e !== 'system') {
                 ViewModel.Subscribe(e);
             }
         }
@@ -186,7 +203,7 @@ SocketController.prototype.unSubscribe = function (topic) {
     if (typeof topic === 'string') {
         topic = [topic];
     }
-    
+
     /**
      * Make sure all the topics are unique
      */
@@ -232,6 +249,7 @@ SocketController.prototype.onBroadcast = function (topic, data) {
      * of something, and is needs to be handled differently than normal messages.
      */
     if (topic === 'system') {
+        console.log(data);
         if (data.Type === 'nameChange') {
             for (var i = 0; i < data.Data.length; i++) {
                 var e = data.Data[i];
@@ -263,7 +281,7 @@ SocketController.prototype.onBroadcast = function (topic, data) {
  * @returns {undefined}
  */
 SocketController.prototype.updateName = function () {
-    this.conn.publish('System', {
+    this.conn.publish('system', {
         name: Scene.Data.User.Name
     });
 }

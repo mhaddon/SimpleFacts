@@ -48,11 +48,10 @@ class Pusher implements WampServerInterface {
             "ID" => $conn->resourceId,
             "Name" => "Guest"
         );
-        
-        $this->updateUserList(true, array(), array($conn->resourceId));
+
+        $this->updateUserList($conn->resourceId, $conn->wrappedConn->WAMP->sessionId);
 
         echo "\r\nNew Client Connected ({$conn->resourceId}) (" . count($this->clients) . " total)\r\n";
-
     }
 
     /**
@@ -62,11 +61,13 @@ class Pusher implements WampServerInterface {
      * @param ConnectionInterface $conn
      */
     public function onClose(ConnectionInterface $conn) {
+        $this->clients[$conn->resourceId]['Name'] = '';
+        $this->updateUserList($conn->resourceId, $conn->wrappedConn->WAMP->sessionId);
+
+
         unset($this->clients[$conn->resourceId]);
 
         echo "\r\nClient Terminated (" . count($this->clients) . " total)\r\n";
-
-        $this->updateUserList(false, array($conn->resourceId), array());
     }
 
     /**
@@ -82,6 +83,8 @@ class Pusher implements WampServerInterface {
     public function onSubscribe(ConnectionInterface $conn, $Topic) {
         $this->Topics[$Topic->getId()] = $Topic;
         echo $conn->resourceId . ' subcribed: ' . $Topic . "\r\n";
+        
+        
     }
 
     /**
@@ -101,27 +104,20 @@ class Pusher implements WampServerInterface {
      * we need to turn the indexes into the incremental fashion for json.
      * Thats the purpose of array_values();
      * 
-     * @param array $exclude A list of session IDs the message should be excluded from (blacklist)
-     * @param array $eligible A list of session IDs the message should be sent to (whitelist)
      */
-    private function updateUserList($CompleteUpdate, array $exclude = array(), array $eligible = array()) {
+    private function updateUserList($ResourceID, $SessionID) {
         if (isset($this->Topics["system"])) {
-            if ($CompleteUpdate) {
-                $this->Topics["system"]->broadcast((object) array(
-                            'Type' => 'nameChange',
-                            'Data' => array_values($this->clients)
-                        ), $exclude, $eligible
-                );
-            } else {
-                print_r(array($this->clients[$exclude[0]]));
-                print_r($this->clients[$exclude[0]]);
-                print_r($exclude[0]);
-                $this->Topics["system"]->broadcast((object) array(
-                            'Type' => 'nameChange',
-                            'Data' => array($this->clients[$exclude[0]])
-                        ), $exclude, $eligible
-                );
-            }
+            $this->Topics["system"]->broadcast((object) array(
+                        'Type' => 'nameChange',
+                        'Data' => array_values($this->clients)
+                    ), array(), array($SessionID)
+            );
+            
+            $this->Topics["system"]->broadcast((object) array(
+                        'Type' => 'nameChange',
+                        'Data' => array($this->clients[$ResourceID])
+                    ), array($SessionID), array()
+            );
         }
     }
 
@@ -154,9 +150,8 @@ class Pusher implements WampServerInterface {
                     "ID" => $conn->resourceId,
                     "Name" => htmlspecialchars($event['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false)
                 );
-                
-                $this->updateUserList(true, array(), array($conn->resourceId));
-                $this->updateUserList(false, array($conn->resourceId), array());
+
+                $this->updateUserList($conn->resourceId, $conn->wrappedConn->WAMP->sessionId);
             }
         } else if (strtolower($topic->getId()) === $topic->getId()) {
             $this->parseData($topic, (object) array(

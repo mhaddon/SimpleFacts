@@ -29,7 +29,7 @@ var SceneController = function () {
             Field: {
                 Message: null,
                 Name: null,
-                ContentEditable: null,
+                MessageBox: null,
                 Channel: null
             },
             Error: {
@@ -92,10 +92,9 @@ SceneController.prototype.loadElementCache = function () {
     /**
      * Elements that are HTML form fields
      */
-    this.Data.Elements.Field.Message = document.querySelector('#MessageInputForm input');
     this.Data.Elements.Field.Name = document.querySelector('#NameInputForm input');
-    this.Data.Elements.Field.ContentEditable = document.getElementById('newcomment');
-    this.Data.Elements.Field.Channel = document.querySelector('#ChannelInputForm input');
+    this.Data.Elements.Field.MessageBox = document.getElementById('newcomment');
+    this.Data.Elements.Field.ChannelBox = document.getElementById('channelName');
 
     /**
      * Elements that are used for error messages
@@ -131,17 +130,22 @@ SceneController.prototype.attachListeners = function () {
  * @param {Object} e - Event information
  * @returns {undefined}
  */
-SceneController.prototype.onChannelSubmitted = function(e) {
+SceneController.prototype.onChannelSubmitted = function (e) {
     e.preventDefault();
-    var matches = uniq(this.Data.Elements.Field.Channel.value.match(/\#+([a-zA-Z_]{1,20})/g));
-    if (matches) {
-        for (var i = 0; i < matches.length; i++) {
-            var e = matches[i];
-            Socket.Subscribe(e);
+
+    var Input = Scene.Data.Elements.Field.ChannelBox.innerText.trim();
+
+    if ((Input.length > 0) && (Socket.Data.connected)) {
+        var Tags = uniq(Input.match(/#+([a-zA-Z_]{1,20})/g));
+        if (Tags !== null) {
+            for (var i = 0; i < Tags.length; i++) {
+                var e = Tags[i];
+                Socket.Subscribe(e);
+            }
+            this.Data.Elements.Field.ChannelBox.innerHTML = '';
+        } else {
+            alert('invalid channel name');
         }
-        this.Data.Elements.Field.Channel.value = '';
-    } else {
-        alert('invalid channel name');
     }
 }
 
@@ -160,7 +164,7 @@ SceneController.prototype.onNameSubmitted = function (e) {
 
         this.Data.Elements.Overlay.parent.style.display = 'none';
         this.Data.Elements.Error.displayName.style.display = '';
-        
+
         Socket.updateName();
     } else {
         this.Data.Elements.Error.displayName.style.display = 'block';
@@ -177,12 +181,12 @@ SceneController.prototype.onNameSubmitted = function (e) {
 SceneController.prototype.onMessageSubmitted = function (e) {
     e.preventDefault();
 
-    var Message = Scene.Data.Elements.Field.ContentEditable.innerText.trim();
+    var Message = Scene.Data.Elements.Field.MessageBox.innerText.trim();
 
     if ((Message.length > 0) && (Socket.Data.connected)) {
 
         var Tags = uniq(Message.match(/#+([a-zA-Z_]{1,20})/g));
-        
+
         /**
          * We must try to create a unique id for this message. So we will get
          * the current time in ms, and we will add a random amount to the number.
@@ -204,7 +208,9 @@ SceneController.prototype.onMessageSubmitted = function (e) {
                 });
             }
 
-            Scene.Data.Elements.Field.ContentEditable.innerText = "";
+            Scene.Data.Elements.Field.MessageBox.innerText = "";
+        } else {
+            alert('A message must contain a tag #likethis')
         }
     }
 }
