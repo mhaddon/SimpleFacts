@@ -2,12 +2,13 @@
  * This class is responsible for handling the Sockets.
  * The sockets use an old version of Autobahn.js in order to run, as the server
  * runs on WAMPv1, and the new versions of Autobahn.js use WAMPv2.
- * 
+ *
  * This page holds the documentation information for this version of Autobahn.js
  * http://autobahn.ws/js/reference_wampv1.html
- * 
+ *
  * @returns {SocketController.SocketAnonym$0}
  */
+
 var SocketController = function () {
     /**
      * This variable holds the Autobahn Websocket connection information.
@@ -27,7 +28,7 @@ var SocketController = function () {
      * It also lets us remotely call the classes functions.
      * I wouldnt see this as defining the variables/functions as public as its
      * a little weird.
-     * 
+     *
      * If you wanted to string the functions, like this:
      * Socket.connect().Subscribe().Broascast()
      * You could easily do that by storing this class in its own return variable,
@@ -45,19 +46,22 @@ var SocketController = function () {
         onBroadcast: this.onBroadcast,
         Broadcast: this.Broadcast,
         onMessage: this.onMessage,
-        updateName: this.updateName
+        updateName: this.updateName,
+        saveChannel: this.saveChannel,
+        restoreChannels: this.restoreChannels,
+        removeChannel: this.removeChannel
     }
 }
 
 /**
  * This method connects to the server.
- * 
+ *
  * @returns {undefined}
  */
 SocketController.prototype.connect = function () {
     /**
      * Connect to the server, and pass through the callback variables
-     * 
+     *
      * ab is Autobahn.js, refer to its documentation for more information.
      * By default the functions we pass through have the ab session as their context,
      * but we want the Class to be the context (because we can easily do this.conn)
@@ -77,9 +81,9 @@ SocketController.prototype.connect = function () {
 /**
  * This method is a callback which is ran when the client manages to successfully
  * connect to the server.
- * 
+ *
  * It also subscribes the user to some example topics
- * 
+ *
  * @returns {undefined}
  */
 SocketController.prototype.onOpen = function () {
@@ -93,17 +97,21 @@ SocketController.prototype.onOpen = function () {
      * and is currently trying to reconnect.
      * Subscriptions are wiped after a disconnect, and so we must reconnect
      * to all the clients subscribed subscriptions.
-     * 
+     *
      */
-    if (ViewModel.Channels.length > 0) {
-        for (var i = 0; i < ViewModel.Channels.length; i++) {
-            var e = ViewModel.Channels[i];
-            if ((e.joined) && (e.name.match(/#+([a-zA-Z_]{1,20})/g))) {
-                this.conn.subscribe(e.name, this.onBroadcast.bind(this));
-            }
-        }
-        this.conn.subscribe('system', this.onBroadcast.bind(this));
-    }
+    /*
+     if (ViewModel.Channels.length > 0) {
+     for (var i = 0; i < ViewModel.Channels.length; i++) {
+     var e = ViewModel.Channels[i];
+     if ((e.joined) && (e.name.match(/#+([a-zA-Z_]{1,20})/g))) {
+     this.conn.subscribe(e.name, this.onBroadcast.bind(this));
+     }
+     }
+     this.conn.subscribe('system', this.onBroadcast.bind(this));
+     }
+     */
+
+    this.restoreChannels();
 
     /**
      * Subscribe to a list of example topics
@@ -120,7 +128,7 @@ SocketController.prototype.onOpen = function () {
 /**
  * This method is a callback which is ran when the connection to the server is
  * closed.
- * 
+ *
  * @param {type} e
  * @returns {undefined}
  */
@@ -139,7 +147,7 @@ SocketController.prototype.onClose = function () {
 
 /**
  * This method closes the current connection
- * 
+ *
  * @returns {undefined}
  */
 SocketController.prototype.Close = function () {
@@ -147,12 +155,12 @@ SocketController.prototype.Close = function () {
 }
 
 /**
- * This method subscribes the client to a topic. 
+ * This method subscribes the client to a topic.
  * You can pass the topics name as a string, or a series of topics as an array.
  * for example:
  * this.Subscribe('#CatFacts');
  * this.Subscribe(['#CatFacts', '#ZombieApocalypse']);
- * 
+ *
  * @param {Array|String} topic
  * @returns {undefined}
  */
@@ -180,18 +188,19 @@ SocketController.prototype.Subscribe = function (topic) {
             this.conn.subscribe(e, this.onBroadcast.bind(this));
             if (e !== 'system') {
                 ViewModel.Subscribe(e);
+                this.saveChannel(e);
             }
         }
     }
 }
 
 /**
- * This method unsubscribes the client from a topic. 
+ * This method unsubscribes the client from a topic.
  * You can pass the topics name as a string, or a series of topics as an array.
  * for example:
  * this.unSubscribe('#CatFacts');
  * this.unSubscribe(['#CatFacts', '#ZombieApocalypse']);
- * 
+ *
  * @param {Array|String} topic
  * @returns {undefined}
  */
@@ -218,13 +227,14 @@ SocketController.prototype.unSubscribe = function (topic) {
         if (ViewModel.isSubscribed(e)) {
             this.conn.unsubscribe(e);
             ViewModel.unSubscribe(e);
+            this.removeChannel(e);
         }
     }
 }
 
 /**
  * This method simply publishes whatever data you want to a specific topic
- * 
+ *
  * @param {String} topic
  * @param {Array|String|Object} data
  * @returns {undefined}
@@ -236,9 +246,9 @@ SocketController.prototype.Broadcast = function (topic, data) {
 /**
  * This method is a callback which is ran once the client recieves a broadcast
  * message from the server.
- * 
+ *
  * This method tells the client what to do with the message they have recieved
- * 
+ *
  * @param {String} topic
  * @param {Array|String|Object} data
  * @returns {undefined}
@@ -262,7 +272,7 @@ SocketController.prototype.onBroadcast = function (topic, data) {
             for (var i = 0; i < data.Data.length; i++) {
                 var e = data.Data[i];
                 ViewModel.addChannel(e, false, false);
-            }            
+            }
         }
     } else {
         /**
@@ -290,9 +300,53 @@ SocketController.prototype.updateName = function () {
     });
 }
 
+SocketController.prototype.removeChannel = function (topic) {
+    var SubscribedChannels = [];
+
+    var ChannelStorage = window.localStorage.getItem('SubscribedChannels');
+    if (ChannelStorage) {
+        SubscribedChannels = JSON.parse(ChannelStorage);
+        var topicItem = SubscribedChannels.indexOf(topic);
+        console.log(topicItem);
+        if (topicItem >= 0) {
+            SubscribedChannels.splice(topicItem, 1);
+
+            window.localStorage.setItem('SubscribedChannels', JSON.stringify(SubscribedChannels));
+        }
+    }
+}
+
+SocketController.prototype.saveChannel = function (topic) {
+    var SubscribedChannels = [];
+
+    var ChannelStorage = window.localStorage.getItem('SubscribedChannels');
+    if (ChannelStorage) {
+        SubscribedChannels = JSON.parse(ChannelStorage);
+    }
+
+    if (SubscribedChannels.indexOf(topic) === -1) {
+        SubscribedChannels.push(topic);
+    }
+
+    window.localStorage.setItem('SubscribedChannels', JSON.stringify(SubscribedChannels));
+}
+
+SocketController.prototype.restoreChannels = function () {
+    var ChannelStorage = window.localStorage.getItem('SubscribedChannels');
+
+    if (ChannelStorage) {
+        var SubscribedChannels = JSON.parse(ChannelStorage);
+
+        SubscribedChannels.forEach(function (item) {
+            this.conn.subscribe(item, this.onBroadcast.bind(this));
+            ViewModel.Subscribe(item);
+        }.bind(this));
+    }
+}
+
 /**
- * Because of how I created this function/object prototype, we need to 
- * instantiate it. 
+ * Because of how I created this function/object prototype, we need to
+ * instantiate it.
  * So it is instantiated as Socket.
  * @type SocketController
  */

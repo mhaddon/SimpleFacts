@@ -202,7 +202,7 @@ ul.speciallist > li:not(:nth-child(2n)) {
     background-color:gainsboro;
 }
 
-ul.speciallist > li > span {
+ul.speciallist > li > span, ul.speciallist > li > a {
     height:30px;
     padding:5px;
     font-size:1.25em;

@@ -57,7 +57,7 @@
         <script type="text/x-template" id="channelList-template">
             <ul class='speciallist'>
                 <li v-for="Channel in Channels | orderBy 'joined' -1">
-                    <span>{{ Channel.name }}</span>
+                    <a href="#" onclick="addTagToChat('{{ Channel.name }}')">{{ Channel.name }}</a>
                     <button v-if="Channel.joined" v-on:click="removeChannel(Channel)">
                         <i class="fa fa-times" aria-hidden="true"></i>
                     </button>
