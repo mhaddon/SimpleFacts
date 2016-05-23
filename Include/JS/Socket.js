@@ -249,7 +249,6 @@ SocketController.prototype.onBroadcast = function (topic, data) {
      * of something, and is needs to be handled differently than normal messages.
      */
     if (topic === 'system') {
-        console.log(data);
         if (data.Type === 'nameChange') {
             for (var i = 0; i < data.Data.length; i++) {
                 var e = data.Data[i];
@@ -259,6 +258,11 @@ SocketController.prototype.onBroadcast = function (topic, data) {
                     ViewModel.addUser(e);
                 }
             }
+        } else if (data.Type === 'topicActivity') {
+            for (var i = 0; i < data.Data.length; i++) {
+                var e = data.Data[i];
+                ViewModel.addChannel(e, false, false);
+            }            
         }
     } else {
         /**

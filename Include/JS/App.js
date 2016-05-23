@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', function () {
  * @returns {Array}
  */
 function uniq(a) {
+    if (!Array.isArray(a)) {
+        return null;
+    }
     var seen = {};
     return a.filter(function (item) {
         return seen.hasOwnProperty(item.toLowerCase()) ? false : (seen[item.toLowerCase()] = true);

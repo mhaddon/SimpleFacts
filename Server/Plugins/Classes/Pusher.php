@@ -144,6 +144,10 @@ class Pusher implements WampServerInterface {
      * @param array $eligible A list of session IDs the message should be sent to (whitelist)
      */
     public function onPublish(ConnectionInterface $conn, $topic, $event, array $exclude, array $eligible) {
+        /**
+         * If the message came through the topic system, then it is to be
+         * handled differently from normal messages
+         */
         if (strtolower($topic->getId()) === 'system') {
             if ((isset($event['name'])) && (strlen($event['name']) > 2)) {
                 $this->clients[$conn->resourceId] = array(
@@ -154,6 +158,10 @@ class Pusher implements WampServerInterface {
                 $this->updateUserList($conn->resourceId, $conn->wrappedConn->WAMP->sessionId);
             }
         } else if (strtolower($topic->getId()) === $topic->getId()) {
+            /**
+             * Otherwise, if the topic is a valid name, then we broadcast this
+             * message out to all connected clients.
+             */
             $this->parseData($topic, (object) array(
                         'time' => date("H:i:s"),
                         'datetime' => date("Y-m-d H:i:s"),
@@ -162,6 +170,12 @@ class Pusher implements WampServerInterface {
                         'name' => htmlspecialchars($event['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false),
                         'msg' => htmlspecialchars($event['msg'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false)
                     ), $conn);
+            
+            $this->Topics["system"]->broadcast((object) array(
+                        'Type' => 'topicActivity',
+                        'Data' => array($topic->getId())
+                    ), array($conn->wrappedConn->WAMP->sessionId), array()
+            );
         }
     }
 

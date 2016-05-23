@@ -237,7 +237,7 @@ var ViewModel = new (function () {
                  * If a client is connected to multiple channels, and they recieve
                  * a message that goes out to these channels, then the client
                  * will recieve the message multiple times.
-                 * 
+                 *
                  * This ensures that the message will not be added multiple times
                  * to the message log.
                  */
@@ -332,14 +332,7 @@ var ViewModel = new (function () {
                     ms: this.getMostRecentMessageTime() + 1
                 });
 
-                if (this.ChannelListIndex(topic) !== false) {
-                    this.Channels[this.ChannelListIndex(topic)].joined = true;
-                } else {
-                    this.Channels.push({
-                        name: topic,
-                        joined: true
-                    });
-                }
+                this.addChannel(topic, true, true);
             },
             /**
              * unSubscribe from a channel.
@@ -354,12 +347,22 @@ var ViewModel = new (function () {
                     ms: this.Messages[this.Messages.length - 1].ms + 1
                 });
 
+                this.addChannel(topic, false, true);
+            },
+            /**
+             * Adds a new channel to the list of channels
+             * @param {String} topic
+             * @param {Boolean} joined
+             * @param {Boolean} override
+             * @returns {undefined}
+             */
+            addChannel: function (topic, joined, override) {
                 if (this.ChannelListIndex(topic) !== false) {
-                    this.Channels[this.ChannelListIndex(topic)].joined = false;
+                    this.Channels[this.ChannelListIndex(topic)].joined = (override) ? joined : this.Channels[this.ChannelListIndex(topic)].joined;
                 } else {
                     this.Channels.push({
                         name: topic,
-                        joined: false
+                        joined: joined
                     });
                 }
             }
