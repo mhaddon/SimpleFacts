@@ -68,3 +68,34 @@ function getClosest(el, tag) {
     // not found :(
     return null;
 }
+
+/**
+ * This is a native way to just do an AJAX request for a JSON file. It may need
+ * to be extended upon for further browser support.
+ *
+ * @param {String} URL
+ * @param {Function} Func
+ * @returns {undefined}
+ */
+function loadJSON(URL, Func) {
+    var request = new XMLHttpRequest();
+    request.open('GET', URL, true);
+
+    request.onload = function () {
+        if (request.status >= 200 && request.status < 400) {
+            // Success!
+            var obj = JSON.parse(request.responseText);
+
+            Func(obj);
+        } else {
+            // We reached our target server, but it returned an error
+
+        }
+    };
+
+    request.onerror = function () {
+        // There was a connection error of some sort
+    };
+
+    request.send();
+}

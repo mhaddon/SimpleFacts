@@ -24,7 +24,7 @@
  * It is compiled with composer.
  * See composer.json for more information.
  */
-require __DIR__ . '/Plugins/vendor/autoload.php';
+require_once(__DIR__ . '/Plugins/vendor/autoload.php');
 
 /**
  * 
@@ -34,8 +34,6 @@ $pusher = new MessangerServer\Pusher;
 
 /**
  * Connect to the database.
- * This should probably be moved away from here so it occures asyncronously like
- * the saving of data.
  */
 $database = new MessangerServer\db;
 

@@ -180,6 +180,22 @@ SocketController.prototype.Subscribe = function (topic) {
             }
         }
     }.bind(this));
+
+    /**
+     * Load previous messages on the subscribed channels that occured in the past
+     * 24 hours.
+     */
+    loadJSON('/SimpleFacts/ajax.retrieveMessages.php?topics=' + topic.join(',').replace(/#/g, '@'), function (obj) {
+        obj.forEach(function (e) {
+            ViewModel.addMessage({
+                ID: e.ID,
+                name: e.name,
+                value: e.msg,
+                time: e.time,
+                ms: e.ms
+            });
+        });
+    });
 }
 
 /**
@@ -338,12 +354,8 @@ SocketController.prototype.restoreChannels = function () {
     var ChannelStorage = window.localStorage.getItem('SubscribedChannels');
 
     if (ChannelStorage) {
-        var SubscribedChannels = JSON.parse(ChannelStorage);
-
-        SubscribedChannels.forEach(function (e) {
-            this.conn.subscribe(e, this.onBroadcast.bind(this));
-            ViewModel.Subscribe(e);
-        }.bind(this));
+        this.Subscribe(JSON.parse(ChannelStorage));
+        this.conn.subscribe('system', this.onBroadcast.bind(this));
 
         return true;
     }

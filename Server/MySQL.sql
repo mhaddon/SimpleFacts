@@ -13,24 +13,26 @@ CREATE DATABASE `SimpleFacts` /*!40100 DEFAULT CHARACTER SET latin1 */;
 USE `SimpleFacts`;
 
 DELIMITER ;;
-CREATE PROCEDURE `retrieveHistory`(IN `Topics` varchar(255))
+    CREATE PROCEDURE `retrieveHistory`(IN `Topics` varchar(255))
     SELECT
        *
     FROM
        `Messages`
     WHERE
+       `DateTime` >= now() - INTERVAL 1 DAY
+    AND
        FIND_IN_SET(`Topic`, Topics) > 0
     GROUP BY
-       `ms`
+       `UUID`
 ;;
-
-CREATE PROCEDURE `saveNewMessage`(IN `pi_Name` varchar(255), IN `pi_IP` varchar(255), IN `pi_Content` blob, IN `pi_DateTime` datetime, IN `pi_ms` int(11), IN `pi_Topic` varchar(255))
+    CREATE PROCEDURE `saveNewMessage`(IN `pi_Name` varchar(255), IN `pi_IP` varchar(255), IN `pi_Content` blob, IN `pi_DateTime` datetime, IN `pi_ms` int(11), IN `pi_Topic` varchar(255), IN `pi_UUID` varchar(255))
     INSERT INTO 
         `Messages` 
-        (`Name`, `IP`, `Content`, `DateTime`, `ms`, `Topic`) 
+        (`Name`, `IP`, `Content`, `DateTime`, `ms`, `Topic`, `UUID`) 
     VALUES 
-        (pi_Name, pi_IP, pi_Content, pi_DateTime, pi_ms, pi_Topic)
+        (pi_Name, pi_IP, pi_Content, pi_DateTime, pi_ms, pi_Topic, pi_UUID)
 ;;
+
 DELIMITER ;
 
 DROP TABLE IF EXISTS `Messages`;
@@ -42,6 +44,7 @@ CREATE TABLE `Messages` (
   `Content` blob NOT NULL,
   `DateTime` datetime NOT NULL,
   `ms` int(11) NOT NULL,
+  `UUID` varchar(255) NOT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

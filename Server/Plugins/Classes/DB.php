@@ -25,7 +25,7 @@ class db {
     function __construct() {
         $this->conn = (require __DIR__ . '/connect.php');
     }
-    
+
     /**
      * When the class is terminated we want to ensure that the connection safely
      * closed too.
@@ -33,7 +33,7 @@ class db {
     function __destruct() {
         $this->conn = null; //PDO apparently doesnt have a ->close() function.
     }
-    
+
     /**
      * We save the message into the database.
      * We are using the PDO library with prepared statements.
@@ -47,7 +47,7 @@ class db {
      */
     public function saveMessage($JSONdata) {
         $data = json_decode($JSONdata);
-        
+
         /**
          * saveNewMessages is a routine that is stored on the server.
          * It saves the message into the database.
@@ -55,7 +55,7 @@ class db {
          * routines. Therefore limiting injection vulnerability.
          */
         $stmt = $this->conn->prepare("
-                        CALL saveNewMessage(:Name, :IP, :Content, :DateTime, :ms, :Topic)
+                        CALL saveNewMessage(:Name, :IP, :Content, :DateTime, :ms, :Topic, :UUID)
                         ");
         $stmt->bindValue(":Name", $data->name, \PDO::PARAM_STR);
         $stmt->bindValue(":Topic", $data->topic, \PDO::PARAM_STR);
@@ -63,11 +63,12 @@ class db {
         $stmt->bindValue(":Content", $data->msg, \PDO::PARAM_STR);
         $stmt->bindValue(":DateTime", $data->datetime, \PDO::PARAM_STR);
         $stmt->bindValue(":ms", $data->ms, \PDO::PARAM_INT);
+        $stmt->bindValue(":UUID", $data->ID, \PDO::PARAM_STR);
         $stmt->execute();
-        
+
         echo "\r\nmessage saved to database\r\n";
     }
-    
+
     /**
      * This method retrieves recent messages from the database according to a list
      * of topics you have inputted.
@@ -86,15 +87,26 @@ class db {
         $stmt = $this->conn->prepare("
                         CALL retrieveHistory(:TopicList)
                         ");
-        
+
         $stmt->bindValue(":TopicList", $topics, \PDO::PARAM_STR);
+
+        $returnVar = [];
+
         if ($stmt->execute()) {
             while ($row = $stmt->fetch()) {
-                print_r($row);
+                array_push($returnVar, [
+                    'ID' => $row['UUID'],
+                    'name' => $row['Name'],
+                    'msg' => $row['Content'],
+                    'time' => date("H:i:s", strtotime($row['DateTime'])),
+                    'ms' => $row['ms']
+                ]);
             }
         }
-        
-        echo "\r\nmessage saved to database\r\n";
+
+        return json_encode($returnVar);
     }
+
 }
+
 ?>
