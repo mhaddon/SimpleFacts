@@ -138,10 +138,9 @@ SceneController.prototype.onChannelSubmitted = function (e) {
     if ((Input.length > 0) && (Socket.Data.connected)) {
         var Tags = uniq(Input.match(/#+([a-zA-Z_]{1,20})/g));
         if (Tags !== null) {
-            for (var i = 0; i < Tags.length; i++) {
-                var e = Tags[i];
+            Tags.forEach(function(e) {
                 Socket.Subscribe(e);
-            }
+            }.bind(this));
             this.Data.Elements.Field.ChannelBox.innerHTML = '';
         } else {
             alert('invalid channel name');
@@ -198,15 +197,14 @@ SceneController.prototype.onMessageSubmitted = function (e) {
         var messageID = (((new Date().getTime()) * 1000) + (Math.random() * 1000)).toString(36);
 
         if (Tags !== null) {
-            for (var i = 0; i < Tags.length; i++) {
-                var e = Tags[i];
+            Tags.forEach(function(e) {
                 Socket.Subscribe(e);
                 Socket.Broadcast(e, {
                     ID: messageID,
                     msg: Message,
                     name: this.Data.User.Name
                 });
-            }
+            }.bind(this));
 
             Scene.Data.Elements.Field.MessageBox.innerText = "";
         } else {

@@ -93,30 +93,19 @@ SocketController.prototype.onOpen = function () {
     this.Data.connected = true;
 
     /**
-     * If we already have connected channels recorded, then the client disconnected
-     * and is currently trying to reconnect.
+     * We connect to all previously saved channels.
      * Subscriptions are wiped after a disconnect, and so we must reconnect
      * to all the clients subscribed subscriptions.
      *
      */
-    /*
-     if (ViewModel.Channels.length > 0) {
-     for (var i = 0; i < ViewModel.Channels.length; i++) {
-     var e = ViewModel.Channels[i];
-     if ((e.joined) && (e.name.match(/#+([a-zA-Z_]{1,20})/g))) {
-     this.conn.subscribe(e.name, this.onBroadcast.bind(this));
-     }
-     }
-     this.conn.subscribe('system', this.onBroadcast.bind(this));
-     }
-     */
-
-    this.restoreChannels();
-
-    /**
-     * Subscribe to a list of example topics
-     */
-    this.Subscribe(['System', '#Cats', '#Dogs', '#ApacheHelicopters']);
+    if (!this.restoreChannels()) {
+        /**
+         * If we have not restored any channels from the local storage, then that
+         * is likely because we have not got any saved, so we will subscribe the
+         * client to some example topics
+         */
+        this.Subscribe(['System', '#Cats', '#Dogs', '#ApacheHelicopters']);
+    }
 
     /**
      * Update the DOM to tell the user they are connected, and prompt for their
@@ -182,8 +171,7 @@ SocketController.prototype.Subscribe = function (topic) {
      * Loop through all the entered topics, then if they have not subscribed
      * to that topic, then we will subscribe them to it.
      */
-    for (var i = 0; i < topic.length; i++) {
-        var e = topic[i].toLowerCase();
+    topic.forEach(function (e) {
         if (!ViewModel.isSubscribed(e)) {
             this.conn.subscribe(e, this.onBroadcast.bind(this));
             if (e !== 'system') {
@@ -191,7 +179,7 @@ SocketController.prototype.Subscribe = function (topic) {
                 this.saveChannel(e);
             }
         }
-    }
+    }.bind(this));
 }
 
 /**
@@ -222,14 +210,13 @@ SocketController.prototype.unSubscribe = function (topic) {
      * Loop through all the entered topics, then if they have not subscribed
      * to that topic, then we will subscribe them to it.
      */
-    for (var i = 0; i < topic.length; i++) {
-        var e = topic[i].toLowerCase();
+    topic.forEach(function (e) {
         if (ViewModel.isSubscribed(e)) {
             this.conn.unsubscribe(e);
             ViewModel.unSubscribe(e);
             this.removeChannel(e);
         }
-    }
+    }.bind(this));
 }
 
 /**
@@ -260,19 +247,17 @@ SocketController.prototype.onBroadcast = function (topic, data) {
      */
     if (topic === 'system') {
         if (data.Type === 'nameChange') {
-            for (var i = 0; i < data.Data.length; i++) {
-                var e = data.Data[i];
+            data.Data.forEach(function (e) {
                 if (e.Name.length === 0) {
                     ViewModel.removeUser(e);
                 } else {
                     ViewModel.addUser(e);
                 }
-            }
+            }.bind(this));
         } else if (data.Type === 'topicActivity') {
-            for (var i = 0; i < data.Data.length; i++) {
-                var e = data.Data[i];
+            data.Data.forEach(function (e) {
                 ViewModel.addChannel(e, false, false);
-            }
+            }.bind(this));
         }
     } else {
         /**
@@ -300,6 +285,11 @@ SocketController.prototype.updateName = function () {
     });
 }
 
+/**
+ * Remove a topic from the list of saved channels
+ * @param {String} topic
+ * @returns {undefined}
+ */
 SocketController.prototype.removeChannel = function (topic) {
     var SubscribedChannels = [];
 
@@ -307,7 +297,6 @@ SocketController.prototype.removeChannel = function (topic) {
     if (ChannelStorage) {
         SubscribedChannels = JSON.parse(ChannelStorage);
         var topicItem = SubscribedChannels.indexOf(topic);
-        console.log(topicItem);
         if (topicItem >= 0) {
             SubscribedChannels.splice(topicItem, 1);
 
@@ -316,32 +305,50 @@ SocketController.prototype.removeChannel = function (topic) {
     }
 }
 
+/**
+ * Save a new channel to the local storage
+ * @param {String} topic
+ * @returns {undefined}
+ */
 SocketController.prototype.saveChannel = function (topic) {
     var SubscribedChannels = [];
 
+    /**
+     * Retrieve saved channels
+     */
     var ChannelStorage = window.localStorage.getItem('SubscribedChannels');
     if (ChannelStorage) {
         SubscribedChannels = JSON.parse(ChannelStorage);
     }
 
+    /**
+     * Update the storage, if the element does not already exist in the array
+     */
     if (SubscribedChannels.indexOf(topic) === -1) {
         SubscribedChannels.push(topic);
+        window.localStorage.setItem('SubscribedChannels', JSON.stringify(SubscribedChannels));
     }
-
-    window.localStorage.setItem('SubscribedChannels', JSON.stringify(SubscribedChannels));
 }
 
+/**
+ * Connect to all channels that are stored in the local storage.
+ * @returns {Boolean} - Returns true if we restored any channels
+ */
 SocketController.prototype.restoreChannels = function () {
     var ChannelStorage = window.localStorage.getItem('SubscribedChannels');
 
     if (ChannelStorage) {
         var SubscribedChannels = JSON.parse(ChannelStorage);
 
-        SubscribedChannels.forEach(function (item) {
-            this.conn.subscribe(item, this.onBroadcast.bind(this));
-            ViewModel.Subscribe(item);
+        SubscribedChannels.forEach(function (e) {
+            this.conn.subscribe(e, this.onBroadcast.bind(this));
+            ViewModel.Subscribe(e);
         }.bind(this));
+
+        return true;
     }
+
+    return false;
 }
 
 /**
