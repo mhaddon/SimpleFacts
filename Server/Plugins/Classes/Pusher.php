@@ -82,7 +82,7 @@ class Pusher implements WampServerInterface {
      */
     public function onSubscribe(ConnectionInterface $conn, $Topic) {
         $this->Topics[$Topic->getId()] = $Topic;
-        echo $conn->resourceId . ' subcribed: ' . $Topic . "\r\n";
+        echo $conn->resourceId . ' subscribed: ' . $Topic . "\r\n";
         
         
     }
@@ -95,7 +95,7 @@ class Pusher implements WampServerInterface {
      * @param type $topic
      */
     public function onUnSubscribe(ConnectionInterface $conn, $topic) {
-        echo 'test';
+        echo $conn->resourceId . ' unsubscribed: ' . $topic->getId() . "\r\n";
     }
 
     /**
